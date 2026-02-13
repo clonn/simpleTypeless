@@ -486,6 +486,34 @@ body {
   line-height: 1.4;
 }
 
+/* Enhanced pulse animations matching Typeless */
+@keyframes pulse-recording {
+  0% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.7); }
+  50% { box-shadow: 0 0 0 20px rgba(233, 69, 96, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0); }
+}
+
+@keyframes pulse-processing {
+  0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+  50% { box-shadow: 0 0 0 20px rgba(255, 193, 7, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+.status-circle-recording {
+  background: var(--accent);
+  animation: pulse-recording 2s ease-in-out infinite;
+}
+
+.status-circle-processing {
+  background: var(--warning);
+  animation: pulse-processing 2s ease-in-out infinite;
+}
+
+.status-circle-ready {
+  background: var(--success);
+  transition: background 0.3s ease;
+}
+
 /* Model Downloads */
 .model-downloads {
   display: flex;

@@ -26,11 +26,17 @@ export function StatusIndicator({
     return 'ready'
   }
 
+  const getAnimationClass = (): string => {
+    if (isProcessing) return 'status-circle-processing'
+    if (isRecording) return 'status-circle-recording'
+    return 'status-circle-ready'
+  }
+
   const modelsReady = modelStatus.whisperLoaded && modelStatus.llmLoaded
 
   return (
     <div className="status-indicator">
-      <div className={`status-circle ${getStatusClass()}`}>
+      <div className={`status-circle ${getStatusClass()} ${getAnimationClass()}`}>
         <div className="pulse" />
       </div>
 
