@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSnackbar } from 'notistack'
 import { useRecordingState } from './hooks/useRecordingState'
 import { useModelStatus } from './hooks/useModelStatus'
 import { SettingsPanel } from './components/SettingsPanel'
@@ -10,6 +11,7 @@ import type { TranscriptionResult, AppSettings } from '@shared/types'
 function App(): JSX.Element {
   const { isRecording, isProcessing } = useRecordingState()
   const { status: modelStatus } = useModelStatus()
+  const { enqueueSnackbar } = useSnackbar()
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [history, setHistory] = useState<TranscriptionResult[]>([])
   const [activeTab, setActiveTab] = useState<'status' | 'models' | 'settings'>('status')
@@ -23,6 +25,22 @@ function App(): JSX.Element {
     if (!window.api?.onTranscriptionComplete) return
     const unsubscribe = window.api.onTranscriptionComplete((result) => {
       setHistory((prev) => [result, ...prev].slice(0, 50)) // Keep last 50
+      enqueueSnackbar('Transcription complete', { variant: 'success' })
+    })
+
+    return unsubscribe
+  }, [])
+
+  // Notify on model download completion or errors
+  useEffect(() => {
+    if (!window.api?.onModelDownloadProgress) return
+
+    const unsubscribe = window.api.onModelDownloadProgress((state) => {
+      if (state.status === 'completed') {
+        enqueueSnackbar(`${state.modelType} model downloaded`, { variant: 'success' })
+      } else if (state.status === 'error') {
+        enqueueSnackbar(`Download failed: ${state.error}`, { variant: 'error' })
+      }
     })
 
     return unsubscribe
