@@ -1,0 +1,13 @@
+# Model Directory
+
+Place your downloaded models here:
+
+1. Whisper Large-v3-Turbo (Q5): whisper-large-v3-turbo-q5_0.bin
+   Download from: https://huggingface.co/ggerganov/whisper.cpp/tree/main
+
+2. Qwen 2.5-3B-Instruct (Q4): qwen2.5-3b-instruct-q4_k_m.gguf
+   Download from: https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF
+
+Alternative LLM options:
+- Llama 3.2-3B-Instruct: llama-3.2-3b-instruct-q4_k_m.gguf
+- Gemma 2-2B-IT: gemma-2-2b-it-q4_k_m.gguf

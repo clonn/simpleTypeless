@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Local Typeless Widget</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        background: transparent;
+        overflow: hidden;
+        -webkit-app-region: drag;
+      }
+
+      .widget {
+        width: 200px;
+        height: 60px;
+        background: rgba(26, 26, 46, 0.95);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 12px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #4a4a6a;
+        transition: all 0.3s;
+      }
+
+      .status-dot.recording {
+        background: #e94560;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      .status-dot.processing {
+        background: #ffc107;
+        animation: pulse 0.8s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.7;
+        }
+      }
+
+      .status-text {
+        flex: 1;
+        font-size: 13px;
+        color: #eaeaea;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .waveform {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        height: 24px;
+      }
+
+      .waveform .bar {
+        width: 3px;
+        background: #e94560;
+        border-radius: 2px;
+        animation: wave 0.5s ease-in-out infinite;
+      }
+
+      .waveform .bar:nth-child(1) {
+        animation-delay: 0s;
+      }
+      .waveform .bar:nth-child(2) {
+        animation-delay: 0.1s;
+      }
+      .waveform .bar:nth-child(3) {
+        animation-delay: 0.2s;
+      }
+      .waveform .bar:nth-child(4) {
+        animation-delay: 0.3s;
+      }
+      .waveform .bar:nth-child(5) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes wave {
+        0%,
+        100% {
+          height: 8px;
+        }
+        50% {
+          height: 20px;
+        }
+      }
+
+      .widget:not(.recording) .waveform {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="widget" class="widget">
+      <div id="status-dot" class="status-dot"></div>
+      <span id="status-text" class="status-text">Ready</span>
+      <div class="waveform">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+    </div>
+
+    <script>
+      const widget = document.getElementById('widget')
+      const statusDot = document.getElementById('status-dot')
+      const statusText = document.getElementById('status-text')
+
+      // Listen for state changes from main process
+      window.api?.onRecordingStateChanged?.((state) => {
+        widget.classList.remove('recording', 'processing')
+
+        if (state.isProcessing) {
+          widget.classList.add('processing')
+          statusDot.classList.remove('recording')
+          statusDot.classList.add('processing')
+          statusText.textContent = 'Processing...'
+        } else if (state.isRecording) {
+          widget.classList.add('recording')
+          statusDot.classList.remove('processing')
+          statusDot.classList.add('recording')
+          statusText.textContent = 'Listening...'
+        } else {
+          statusDot.classList.remove('recording', 'processing')
+          statusText.textContent = 'Ready'
+        }
+      })
+
+      // Listen for partial transcription
+      window.api?.onTranscriptionPartial?.((data) => {
+        if (data.rawText) {
+          statusText.textContent = data.rawText.slice(-30) + '...'
+        }
+      })
+    </script>
+  </body>
+</html>
