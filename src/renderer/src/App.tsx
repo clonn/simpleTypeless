@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSnackbar } from 'notistack'
 import { useRecordingState } from './hooks/useRecordingState'
 import { useModelStatus } from './hooks/useModelStatus'
@@ -6,30 +6,42 @@ import { SettingsPanel } from './components/SettingsPanel'
 import { TranscriptionHistory } from './components/TranscriptionHistory'
 import { StatusIndicator } from './components/StatusIndicator'
 import { ModelStatusPanel } from './components/ModelStatusPanel'
-import type { TranscriptionResult, AppSettings } from '@shared/types'
+import type { AppSettings } from '@shared/types'
 
 function App(): JSX.Element {
   const { isRecording, isProcessing } = useRecordingState()
   const { status: modelStatus } = useModelStatus()
   const { enqueueSnackbar } = useSnackbar()
   const [settings, setSettings] = useState<AppSettings | null>(null)
-  const [history, setHistory] = useState<TranscriptionResult[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [history, setHistory] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<'status' | 'models' | 'settings'>('status')
+
+  const loadHistory = useCallback(async () => {
+    if (!window.api?.getHistory) return
+    const items = await window.api.getHistory(50)
+    setHistory(items)
+  }, [])
+
+  // Load history from database on mount
+  useEffect(() => {
+    loadHistory()
+  }, [loadHistory])
 
   useEffect(() => {
     // Load initial settings
     if (!window.api?.getSettings) return
     window.api.getSettings().then(setSettings)
 
-    // Subscribe to transcription events
+    // Subscribe to transcription events — reload history from DB on new transcription
     if (!window.api?.onTranscriptionComplete) return
-    const unsubscribe = window.api.onTranscriptionComplete((result) => {
-      setHistory((prev) => [result, ...prev].slice(0, 50)) // Keep last 50
+    const unsubscribe = window.api.onTranscriptionComplete(() => {
+      loadHistory()
       enqueueSnackbar('Transcription complete', { variant: 'success' })
     })
 
     return unsubscribe
-  }, [])
+  }, [loadHistory])
 
   // Notify on model download completion or errors
   useEffect(() => {
@@ -97,7 +109,7 @@ function App(): JSX.Element {
               onToggle={handleRecordingToggle}
             />
 
-            <TranscriptionHistory history={history} />
+            <TranscriptionHistory history={history} onHistoryUpdate={setHistory} />
           </div>
         )}
         {activeTab === 'models' && <ModelStatusPanel />}
