@@ -7,6 +7,7 @@ import { ASREngine } from './asr/engine'
 import { LLMEngine } from './llm/engine'
 import { TextInjector } from './injector/injector'
 import { ModelDownloader, MODELS } from './model/downloader'
+import { OpusEncoder } from './audio/opusEncoder'
 
 let mainWindow: BrowserWindow | null = null
 let floatingWidget: BrowserWindow | null = null
@@ -19,6 +20,7 @@ let asrEngine: ASREngine | null = null
 let llmEngine: LLMEngine | null = null
 let textInjector: TextInjector | null = null
 let modelDownloader: ModelDownloader | null = null
+let opusEncoder: OpusEncoder | null = null
 
 function createFloatingWidget(): void {
   floatingWidget = new BrowserWindow({
@@ -151,6 +153,7 @@ async function initializeEngines(): Promise<void> {
   asrEngine = new ASREngine()
   llmEngine = new LLMEngine()
   textInjector = new TextInjector()
+  opusEncoder = new OpusEncoder()
 
   // Set up audio capture callbacks
   audioCapture.onSpeechStart(() => {
@@ -166,6 +169,13 @@ async function initializeEngines(): Promise<void> {
       isRecording: false,
       isProcessing: true,
       vadActive: false
+    })
+
+    // Start audio encoding in parallel (does not block transcription pipeline)
+    const filename = `recording-${Date.now()}`
+    const audioPathPromise = opusEncoder?.encode(audioBuffer, filename).catch((err) => {
+      console.error('[Main] Audio encoding error:', err)
+      return undefined
     })
 
     try {
@@ -184,12 +194,16 @@ async function initializeEngines(): Promise<void> {
         await textInjector!.inject(rewrittenText)
       }
 
+      // Await audio encoding result (should already be done by now)
+      const audioPath = await audioPathPromise
+
       broadcastToRenderers(IPC_CHANNELS.TRANSCRIPTION_COMPLETE, {
         rawText,
         rewrittenText,
         timestamp: Date.now(),
         duration: audioBuffer.length / 16000,
-        appContext
+        appContext,
+        audioPath
       })
     } catch (error) {
       console.error('Processing error:', error)
@@ -389,4 +403,5 @@ app.on('window-all-closed', () => {
 app.on('will-quit', () => {
   globalShortcut.unregisterAll()
   audioCapture?.stop()
+  opusEncoder?.destroy()
 })
