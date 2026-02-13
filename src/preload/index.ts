@@ -18,6 +18,18 @@ const api = {
   downloadModel: (modelType: 'whisper' | 'llm'): Promise<void> =>
     ipcRenderer.invoke(IPC_CHANNELS.DOWNLOAD_MODEL, modelType),
 
+  // History
+  getHistory: (limit?: number, offset?: number) =>
+    ipcRenderer.invoke(IPC_CHANNELS.GET_HISTORY, limit, offset),
+  deleteHistory: (id: string) =>
+    ipcRenderer.invoke(IPC_CHANNELS.DELETE_HISTORY, id),
+  getHistoryCount: () =>
+    ipcRenderer.invoke(IPC_CHANNELS.GET_HISTORY_COUNT),
+
+  // Onboarding
+  completeOnboarding: (): Promise<void> =>
+    ipcRenderer.invoke(IPC_CHANNELS.ONBOARDING_COMPLETE),
+
   // Event listeners
   onRecordingStateChanged: (callback: (state: RecordingState) => void): (() => void) => {
     const listener = (_: Electron.IpcRendererEvent, state: RecordingState): void =>

@@ -539,3 +539,67 @@ body {
   background: var(--accent);
   color: white;
 }
+
+/* Onboarding */
+.onboarding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 40px;
+  text-align: center;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.onboarding-progress {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+
+.onboarding-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.3s ease;
+}
+
+.onboarding-dot.active {
+  background: var(--accent);
+  transform: scale(1.2);
+}
+
+.onboarding-dot.completed {
+  background: var(--success);
+}
+
+.onboarding-content h1 {
+  font-size: 28px;
+  margin-bottom: 16px;
+}
+
+.onboarding-content p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.onboarding-btn {
+  margin-top: 40px;
+  padding: 12px 32px;
+  font-size: 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.onboarding-btn:hover {
+  background: var(--accent-hover);
+}

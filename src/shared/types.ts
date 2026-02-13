@@ -165,5 +165,13 @@ export const IPC_CHANNELS = {
   SET_MODEL_PROFILE: 'model:set-profile',
 
   // Audio feedback
-  PLAY_SOUND: 'sound:play'
+  PLAY_SOUND: 'sound:play',
+
+  // History
+  GET_HISTORY: 'history:get',
+  DELETE_HISTORY: 'history:delete',
+  GET_HISTORY_COUNT: 'history:count',
+
+  // Onboarding
+  ONBOARDING_COMPLETE: 'onboarding:complete'
 } as const

@@ -2,15 +2,21 @@ import { app, shell, BrowserWindow, globalShortcut, ipcMain, Tray, Menu, nativeI
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { IPC_CHANNELS, DEFAULT_SETTINGS, AppSettings, ModelStatus, ModelDownloadState } from '../shared/types'
+import Store from 'electron-store'
 import { AudioCapture } from './audio/capture'
 import { ASREngine } from './asr/engine'
 import { LLMEngine } from './llm/engine'
 import { TextInjector } from './injector/injector'
 import { ModelDownloader, MODELS } from './model/downloader'
 import { OpusEncoder } from './audio/opusEncoder'
+import { runMigrations } from './db/index'
+import { saveTranscription, getHistory, deleteTranscription, getHistoryCount } from './db/repository'
+
+const store = new Store()
 
 let mainWindow: BrowserWindow | null = null
 let floatingWidget: BrowserWindow | null = null
+let onboardingWindow: BrowserWindow | null = null
 let tray: Tray | null = null
 let settings: AppSettings = { ...DEFAULT_SETTINGS }
 
@@ -52,6 +58,33 @@ function createFloatingWidget(): void {
 
   floatingWidget.on('closed', () => {
     floatingWidget = null
+  })
+}
+
+function createOnboardingWindow(): void {
+  if (store.get('onboardingComplete', false)) return
+
+  onboardingWindow = new BrowserWindow({
+    width: 600,
+    height: 450,
+    resizable: false,
+    center: true,
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.js'),
+      sandbox: false,
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  })
+
+  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    onboardingWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/onboarding.html`)
+  } else {
+    onboardingWindow.loadFile(join(__dirname, '../renderer/onboarding.html'))
+  }
+
+  onboardingWindow.on('closed', () => {
+    onboardingWindow = null
   })
 }
 
@@ -205,6 +238,12 @@ async function initializeEngines(): Promise<void> {
         appContext,
         audioPath
       })
+
+      // Save to database
+      saveTranscription(
+        { rawText, rewrittenText, timestamp: Date.now(), duration: audioBuffer.length / 16000 },
+        appContext
+      )
     } catch (error) {
       console.error('Processing error:', error)
     }
@@ -304,6 +343,23 @@ function setupIPC(): void {
     return getModelStatus()
   })
 
+  ipcMain.handle(IPC_CHANNELS.GET_HISTORY, (_, limit?: number, offset?: number) => {
+    return getHistory(limit, offset)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.DELETE_HISTORY, (_, id: string) => {
+    deleteTranscription(id)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GET_HISTORY_COUNT, () => {
+    return getHistoryCount()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.ONBOARDING_COMPLETE, () => {
+    store.set('onboardingComplete', true)
+    onboardingWindow?.close()
+  })
+
   ipcMain.handle(IPC_CHANNELS.DOWNLOAD_MODEL, async (_, modelType: 'whisper' | 'llm') => {
     if (!modelDownloader) return
 
@@ -371,11 +427,15 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  // Run DB migrations first
+  runMigrations()
+
   // Initialize model downloader first
   await initializeModelDownloader()
 
   setupIPC()
   createTray()
+  createOnboardingWindow()
   createFloatingWidget()
   createMainWindow()
   registerGlobalShortcut()
