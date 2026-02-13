@@ -48,6 +48,17 @@ const api = {
   }
 }
 
+// Listen for sound playback requests from main process
+ipcRenderer.on(IPC_CHANNELS.PLAY_SOUND, (_: Electron.IpcRendererEvent, soundPath: string) => {
+  try {
+    const audio = new Audio(`file://${soundPath}`)
+    audio.volume = 0.5
+    audio.play().catch((err) => console.error('Failed to play sound:', err))
+  } catch (err) {
+    console.error('Failed to create Audio element for sound:', err)
+  }
+})
+
 // Expose in the main world
 if (process.contextIsolated) {
   try {

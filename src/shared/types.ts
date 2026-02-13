@@ -1,10 +1,20 @@
 // Shared types between main and renderer processes
 
+export interface AppContext {
+  appName: string
+  bundleId: string
+  windowTitle: string
+  webTitle?: string
+  webDomain?: string
+  webUrl?: string
+}
+
 export interface TranscriptionResult {
   rawText: string
   rewrittenText: string
   timestamp: number
   duration: number
+  appContext?: AppContext
 }
 
 export interface RecordingState {
@@ -113,6 +123,7 @@ export interface AppSettings {
   autoInject: boolean
   showFloatingWidget: boolean
   modelProfileId: string
+  enableSounds: boolean
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -120,7 +131,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   promptMode: 'default',
   autoInject: true,
   showFloatingWidget: true,
-  modelProfileId: 'balanced'
+  modelProfileId: 'balanced',
+  enableSounds: true
 }
 
 // IPC Channel names
@@ -150,5 +162,8 @@ export const IPC_CHANNELS = {
 
   // Model profiles
   GET_MODEL_PROFILES: 'model:profiles',
-  SET_MODEL_PROFILE: 'model:set-profile'
+  SET_MODEL_PROFILE: 'model:set-profile',
+
+  // Audio feedback
+  PLAY_SOUND: 'sound:play'
 } as const

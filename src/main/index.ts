@@ -176,7 +176,10 @@ async function initializeEngines(): Promise<void> {
       // Step 2: Rewrite with LLM
       const rewrittenText = await llmEngine!.rewrite(rawText, settings.promptMode)
 
-      // Step 3: Inject text
+      // Step 3: Collect app context before injection
+      const appContext = await textInjector!.getAppContext()
+
+      // Step 4: Inject text
       if (settings.autoInject) {
         await textInjector!.inject(rewrittenText)
       }
@@ -185,7 +188,8 @@ async function initializeEngines(): Promise<void> {
         rawText,
         rewrittenText,
         timestamp: Date.now(),
-        duration: audioBuffer.length / 16000
+        duration: audioBuffer.length / 16000,
+        appContext
       })
     } catch (error) {
       console.error('Processing error:', error)
@@ -205,6 +209,7 @@ async function initializeEngines(): Promise<void> {
 
 async function startRecording(): Promise<void> {
   if (!audioCapture) return
+  playSound('record-start')
   await audioCapture.start()
 
   if (settings.showFloatingWidget && floatingWidget) {
@@ -214,12 +219,21 @@ async function startRecording(): Promise<void> {
 
 async function stopRecording(): Promise<void> {
   if (!audioCapture) return
+  playSound('record-end')
   await audioCapture.stop()
 }
 
 function broadcastToRenderers(channel: string, data: unknown): void {
   mainWindow?.webContents.send(channel, data)
   floatingWidget?.webContents.send(channel, data)
+}
+
+function playSound(soundName: 'record-start' | 'record-end'): void {
+  if (!settings.enableSounds) return
+
+  const resourcePath = process.resourcesPath || join(__dirname, '../../resources')
+  const soundPath = join(resourcePath, 'sounds', `${soundName}.wav`)
+  broadcastToRenderers(IPC_CHANNELS.PLAY_SOUND, soundPath)
 }
 
 function getModelStatus(): ModelStatus {

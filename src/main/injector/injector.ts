@@ -8,6 +8,7 @@
 
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { AppContext } from '../../shared/types'
 
 const execAsync = promisify(exec)
 
@@ -169,6 +170,119 @@ export class TextInjector {
       return stdout.trim()
     } catch {
       return ''
+    }
+  }
+
+  async getAppContext(): Promise<AppContext> {
+    const BROWSER_BUNDLE_IDS = [
+      'com.apple.Safari',
+      'com.google.Chrome',
+      'company.thebrowser.Browser',
+      'org.mozilla.firefox'
+    ]
+
+    const [appName, windowTitle, bundleId] = await Promise.all([
+      this.getActiveApplicationName(),
+      this.getActiveWindowTitle(),
+      this.getActiveBundleId()
+    ])
+
+    const context: AppContext = {
+      appName,
+      bundleId,
+      windowTitle
+    }
+
+    if (BROWSER_BUNDLE_IDS.includes(bundleId)) {
+      const webInfo = await this.getBrowserWebInfo(bundleId, appName)
+      if (webInfo) {
+        context.webTitle = webInfo.title
+        context.webUrl = webInfo.url
+        if (webInfo.url) {
+          try {
+            const url = new URL(webInfo.url)
+            context.webDomain = url.hostname
+          } catch {
+            // URL parsing failed, leave webDomain undefined
+          }
+        }
+      }
+    }
+
+    return context
+  }
+
+  private async getActiveBundleId(): Promise<string> {
+    try {
+      const script = `tell application "System Events" to get bundle identifier of first process whose frontmost is true`
+      const { stdout } = await execAsync(`osascript -e '${script}'`)
+      return stdout.trim()
+    } catch {
+      return ''
+    }
+  }
+
+  private async getBrowserWebInfo(
+    bundleId: string,
+    appName: string
+  ): Promise<{ title: string; url: string } | null> {
+    try {
+      let script: string
+
+      switch (bundleId) {
+        case 'com.apple.Safari':
+          script = `
+            tell application "Safari"
+              set docTitle to name of current tab of front window
+              set docURL to URL of current tab of front window
+              return docTitle & "\\n" & docURL
+            end tell
+          `
+          break
+
+        case 'com.google.Chrome':
+          script = `
+            tell application "Google Chrome"
+              set docTitle to title of active tab of front window
+              set docURL to URL of active tab of front window
+              return docTitle & "\\n" & docURL
+            end tell
+          `
+          break
+
+        case 'company.thebrowser.Browser':
+          // Arc browser uses the same AppleScript interface as Chrome
+          script = `
+            tell application "${appName}"
+              set docTitle to title of active tab of front window
+              set docURL to URL of active tab of front window
+              return docTitle & "\\n" & docURL
+            end tell
+          `
+          break
+
+        case 'org.mozilla.firefox':
+          // Firefox has limited AppleScript support; window title contains page title
+          script = `
+            tell application "Firefox"
+              set docTitle to name of front window
+              return docTitle & "\\n"
+            end tell
+          `
+          break
+
+        default:
+          return null
+      }
+
+      const { stdout } = await execAsync(`osascript -e '${script.replace(/'/g, "'\"'\"'")}'`)
+      const lines = stdout.trim().split('\n')
+      return {
+        title: lines[0] || '',
+        url: lines[1] || ''
+      }
+    } catch {
+      return null
     }
   }
 }
