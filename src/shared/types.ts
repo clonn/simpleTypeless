@@ -36,6 +36,16 @@ export interface CloudAPIConfig {
   openaiApiKey?: string
 }
 
+export interface ASRStatus {
+  provider: ASRProvider
+  ready: boolean
+  binaryFound: boolean
+  modelFound: boolean
+  binaryPath?: string
+  modelPath?: string
+  error?: string
+}
+
 export interface ModelDownloadState {
   modelType: 'whisper' | 'llm'
   modelName: string
@@ -186,5 +196,8 @@ export const IPC_CHANNELS = {
   ONBOARDING_COMPLETE: 'onboarding:complete',
 
   // ASR Testing
-  TEST_ASR: 'asr:test'
+  TEST_ASR: 'asr:test',
+
+  // ASR Status
+  ASR_STATUS: 'asr:status'
 } as const

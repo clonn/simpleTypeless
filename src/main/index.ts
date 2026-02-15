@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, globalShortcut, ipcMain, Tray, Menu, nativeImage } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { IPC_CHANNELS, DEFAULT_SETTINGS, AppSettings, ModelStatus, ModelDownloadState } from '../shared/types'
+import { IPC_CHANNELS, DEFAULT_SETTINGS, AppSettings, ModelStatus, ModelDownloadState, ASRStatus } from '../shared/types'
 import Store from 'electron-store'
 import { AudioCapture } from './audio/capture'
 import { LLMEngine } from './llm/engine'
@@ -418,6 +418,29 @@ function setupIPC(): void {
       }
     } catch (error) {
       console.error(`[Main] Failed to download ${modelType} model:`, error)
+    }
+  })
+
+  ipcMain.handle(IPC_CHANNELS.ASR_STATUS, async () => {
+    try {
+      const { ASREngine } = await import('./asr/engine')
+      const readiness = ASREngine.checkReady()
+      return {
+        provider: settings.asrProvider,
+        ready: readiness.binaryFound && readiness.modelFound,
+        binaryFound: readiness.binaryFound,
+        modelFound: readiness.modelFound,
+        binaryPath: readiness.binaryPath ?? undefined,
+        modelPath: readiness.modelPath
+      } satisfies ASRStatus
+    } catch (error) {
+      return {
+        provider: settings.asrProvider,
+        ready: false,
+        binaryFound: false,
+        modelFound: false,
+        error: String(error)
+      } satisfies ASRStatus
     }
   })
 }

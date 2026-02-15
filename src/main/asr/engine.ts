@@ -9,6 +9,7 @@ import { spawn, ChildProcess } from 'child_process'
 import { join } from 'path'
 import { app } from 'electron'
 import { existsSync, writeFileSync, unlinkSync } from 'fs'
+import { detectWhisperBinary } from './whisperBinary'
 
 const SAMPLE_RATE = 16000
 
@@ -47,6 +48,26 @@ export class ASREngine {
 
   get isLoaded(): boolean {
     return this._isLoaded
+  }
+
+  static checkReady(): {
+    binaryFound: boolean
+    modelFound: boolean
+    binaryPath: string | null
+    modelPath: string
+  } {
+    const detection = detectWhisperBinary()
+    const modelPath = join(
+      app.getPath('userData'),
+      'models',
+      'whisper-large-v3-turbo-q5_0.bin'
+    )
+    return {
+      binaryFound: detection.found,
+      modelFound: existsSync(modelPath),
+      binaryPath: detection.path,
+      modelPath
+    }
   }
 
   async initialize(): Promise<void> {
@@ -160,15 +181,16 @@ export class ASREngine {
   }
 
   private getWhisperBinaryPath(): string {
-    // Look for whisper.cpp binary in resources or system path
+    const detection = detectWhisperBinary()
+    if (detection.found && detection.path) {
+      return detection.path
+    }
+    // Fallback to old resource-based path for bundled binary
     const resourcePath = process.resourcesPath || join(__dirname, '../../resources')
-
     if (process.platform === 'darwin') {
-      // Check for arm64 or x64 binary
       const arch = process.arch === 'arm64' ? 'arm64' : 'x64'
       return join(resourcePath, 'bin', `whisper-${arch}`)
     }
-
     return join(resourcePath, 'bin', 'whisper')
   }
 

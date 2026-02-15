@@ -30,6 +30,9 @@ const api = {
   completeOnboarding: (): Promise<void> =>
     ipcRenderer.invoke(IPC_CHANNELS.ONBOARDING_COMPLETE),
 
+  // ASR Status
+  getASRStatus: () => ipcRenderer.invoke(IPC_CHANNELS.ASR_STATUS),
+
   // Event listeners
   onRecordingStateChanged: (callback: (state: RecordingState) => void): (() => void) => {
     const listener = (_: Electron.IpcRendererEvent, state: RecordingState): void =>

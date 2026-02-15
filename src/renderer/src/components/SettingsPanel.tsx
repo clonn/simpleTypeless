@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { AppSettings, ASRProvider } from '@shared/types'
 import { DEFAULT_PROMPT_MODES } from '@shared/types'
 import { MODEL_PROFILES, getProfileById } from '@shared/models'
@@ -11,6 +11,20 @@ interface SettingsPanelProps {
 export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.Element {
   const [editingHotkey, setEditingHotkey] = useState(false)
   const [testingASR, setTestingASR] = useState(false)
+  const [testResult, setTestResult] = useState<string>('')
+  const [asrStatus, setAsrStatus] = useState<{
+    ready: boolean
+    binaryFound: boolean
+    modelFound: boolean
+  } | null>(null)
+
+  useEffect(() => {
+    if (settings?.asrProvider === 'local-whisper') {
+      window.api?.getASRStatus?.().then((status: any) => {
+        if (status) setAsrStatus(status)
+      }).catch(() => {})
+    }
+  }, [settings?.asrProvider])
 
   if (!settings) {
     return <div className="settings-panel loading">Loading settings...</div>
@@ -53,16 +67,19 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
 
   const handleTestASR = async (): Promise<void> => {
     setTestingASR(true)
+    setTestResult('')
     try {
       // Test will trigger a short recording
       await window.api?.startRecording()
       setTimeout(async () => {
         await window.api?.stopRecording()
         setTestingASR(false)
+        setTestResult('Test complete. Check transcription history for result.')
       }, 2000)
     } catch (error) {
       console.error('ASR test failed:', error)
       setTestingASR(false)
+      setTestResult('Test failed. Please check your ASR configuration.')
     }
   }
 
@@ -132,6 +149,23 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
             <div className="provider-info">
               <span className="provider-name">Local Whisper</span>
               <span className="provider-desc">Uses local whisper.cpp model</span>
+              {settings.asrProvider === 'local-whisper' && asrStatus && (
+                <div className="provider-status">
+                  <span className={`status-dot ${asrStatus.binaryFound ? 'ready' : 'not-ready'}`} />
+                  <span className="status-text">
+                    {asrStatus.binaryFound ? 'whisper-cli found' : 'whisper-cli not found'}
+                  </span>
+                  {!asrStatus.binaryFound && (
+                    <div className="install-hint">
+                      Install: <code>brew install whisper-cpp</code>
+                    </div>
+                  )}
+                  <span className={`status-dot ${asrStatus.modelFound ? 'ready' : 'not-ready'}`} />
+                  <span className="status-text">
+                    {asrStatus.modelFound ? 'Model ready' : 'Model not downloaded'}
+                  </span>
+                </div>
+              )}
             </div>
           </label>
 
@@ -194,6 +228,11 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
           <span className="test-hint">
             Click and speak for 2 seconds to test the selected provider
           </span>
+          {testResult && (
+            <div className="test-result">
+              {testResult}
+            </div>
+          )}
         </div>
       </section>
 
