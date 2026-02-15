@@ -56,7 +56,7 @@ export function TranscriptionHistory({
     if (!item.id || !window.api?.deleteHistory) return
     await window.api.deleteHistory(item.id)
     if (onHistoryUpdate && window.api?.getHistory) {
-      const updated = await window.api.getHistory(50)
+      const updated = await window.api.getHistory(50) as HistoryItem[]
       onHistoryUpdate(updated)
     }
   }

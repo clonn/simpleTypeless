@@ -92,7 +92,7 @@ export class LLMEngine {
   }
 
   private async runInference(userInput: string, systemPrompt: string): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       const llamaBinary = this.getLlamaBinaryPath()
 
       if (!existsSync(llamaBinary)) {

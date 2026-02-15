@@ -12,7 +12,8 @@ import { OpusEncoder } from './audio/opusEncoder'
 import { runMigrations } from './db/index'
 import { saveTranscription, getHistory, deleteTranscription, getHistoryCount } from './db/repository'
 
-const store = new Store()
+// electron-store v10 ESM types don't resolve properly with moduleResolution: "node"
+const store = new Store() as unknown as { get(key: string, defaultValue?: unknown): unknown; set(key: string, value: unknown): void }
 
 let mainWindow: BrowserWindow | null = null
 let floatingWidget: BrowserWindow | null = null
@@ -228,7 +229,7 @@ async function initializeEngines(): Promise<void> {
       }
 
       // Await audio encoding result (should already be done by now)
-      const audioPath = await audioPathPromise
+      await audioPathPromise
 
       // Save to database first (before broadcast so renderer sees the new record)
       saveTranscription(

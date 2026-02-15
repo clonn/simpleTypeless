@@ -52,6 +52,13 @@ export class ModelDownloader {
     }
   }
 
+  private getModelInfo(modelType: 'whisper' | 'llm', modelId: string): ModelInfo | undefined {
+    const registry = modelType === 'whisper'
+      ? (MODELS.whisper as Record<string, ModelInfo>)
+      : (MODELS.llm as Record<string, ModelInfo>)
+    return registry[modelId]
+  }
+
   onProgress(callback: (state: ModelDownloadState) => void): void {
     this.onProgressCallback = callback
   }
@@ -61,8 +68,7 @@ export class ModelDownloader {
   }
 
   getModelPath(modelType: 'whisper' | 'llm', modelId: string): string {
-    const models = modelType === 'whisper' ? MODELS.whisper : MODELS.llm
-    const model = models[modelId as keyof typeof models]
+    const model = this.getModelInfo(modelType, modelId)
     if (!model) {
       throw new Error(`Unknown model: ${modelType}/${modelId}`)
     }
@@ -103,8 +109,7 @@ export class ModelDownloader {
     modelType: 'whisper' | 'llm',
     modelId: string
   ): Promise<void> {
-    const models = modelType === 'whisper' ? MODELS.whisper : MODELS.llm
-    const model = models[modelId as keyof typeof models]
+    const model = this.getModelInfo(modelType, modelId)
 
     if (!model) {
       throw new Error(`Unknown model: ${modelType}/${modelId}`)
