@@ -623,3 +623,132 @@ body {
 .onboarding-btn:hover {
   background: var(--accent-hover);
 }
+
+/* ASR Provider Selection */
+.provider-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.provider-option {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.provider-option:hover {
+  border-color: var(--accent);
+}
+
+.provider-option input[type='radio'] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.provider-option input[type='radio']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.provider-option:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--bg-tertiary);
+}
+
+.provider-option:has(input:disabled) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.provider-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.provider-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.provider-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.cloud-config {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.cloud-config .setting-item {
+  border: none;
+  padding: 0;
+}
+
+.cloud-config input[type='password'],
+.cloud-config input[type='text'] {
+  flex: 1;
+  padding: 0.5rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: monospace;
+  font-size: 0.875rem;
+}
+
+.cloud-config input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.test-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  align-items: flex-start;
+}
+
+.test-button {
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.test-button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.test-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.test-hint {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { AppSettings } from '@shared/types'
+import type { AppSettings, ASRProvider } from '@shared/types'
 import { DEFAULT_PROMPT_MODES } from '@shared/types'
 import { MODEL_PROFILES, getProfileById } from '@shared/models'
 
@@ -10,6 +10,7 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.Element {
   const [editingHotkey, setEditingHotkey] = useState(false)
+  const [testingASR, setTestingASR] = useState(false)
 
   if (!settings) {
     return <div className="settings-panel loading">Loading settings...</div>
@@ -34,6 +35,34 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
     if (parts.length > 1) {
       onChange({ globalHotkey: parts.join('+') })
       setEditingHotkey(false)
+    }
+  }
+
+  const handleProviderChange = (provider: ASRProvider): void => {
+    onChange({ asrProvider: provider })
+  }
+
+  const handleApiKeyChange = (apiKey: string): void => {
+    onChange({
+      cloudApiConfig: {
+        ...settings.cloudApiConfig,
+        openaiApiKey: apiKey
+      }
+    })
+  }
+
+  const handleTestASR = async (): Promise<void> => {
+    setTestingASR(true)
+    try {
+      // Test will trigger a short recording
+      await window.api?.startRecording()
+      setTimeout(async () => {
+        await window.api?.stopRecording()
+        setTestingASR(false)
+      }, 2000)
+    } catch (error) {
+      console.error('ASR test failed:', error)
+      setTestingASR(false)
     }
   }
 
@@ -85,6 +114,86 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
             checked={settings.enableSounds}
             onChange={(e) => onChange({ enableSounds: e.target.checked })}
           />
+        </div>
+      </section>
+
+      <section className="settings-section">
+        <h3>Speech Recognition Provider</h3>
+
+        <div className="provider-selection">
+          <label className="provider-option">
+            <input
+              type="radio"
+              name="asrProvider"
+              value="local-whisper"
+              checked={settings.asrProvider === 'local-whisper'}
+              onChange={() => handleProviderChange('local-whisper')}
+            />
+            <div className="provider-info">
+              <span className="provider-name">Local Whisper</span>
+              <span className="provider-desc">Uses local whisper.cpp model</span>
+            </div>
+          </label>
+
+          <label className="provider-option">
+            <input
+              type="radio"
+              name="asrProvider"
+              value="macos-dictation"
+              checked={settings.asrProvider === 'macos-dictation'}
+              onChange={() => handleProviderChange('macos-dictation')}
+              disabled={process.platform !== 'darwin'}
+            />
+            <div className="provider-info">
+              <span className="provider-name">macOS Dictation</span>
+              <span className="provider-desc">
+                {process.platform === 'darwin'
+                  ? 'Native macOS speech recognition (placeholder)'
+                  : 'Only available on macOS'}
+              </span>
+            </div>
+          </label>
+
+          <label className="provider-option">
+            <input
+              type="radio"
+              name="asrProvider"
+              value="cloud-openai"
+              checked={settings.asrProvider === 'cloud-openai'}
+              onChange={() => handleProviderChange('cloud-openai')}
+            />
+            <div className="provider-info">
+              <span className="provider-name">Cloud (OpenAI)</span>
+              <span className="provider-desc">Uses OpenAI Whisper API</span>
+            </div>
+          </label>
+        </div>
+
+        {settings.asrProvider === 'cloud-openai' && (
+          <div className="cloud-config">
+            <div className="setting-item">
+              <label>OpenAI API Key</label>
+              <input
+                type="password"
+                placeholder="sk-..."
+                value={settings.cloudApiConfig.openaiApiKey || ''}
+                onChange={(e) => handleApiKeyChange(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="test-section">
+          <button
+            className="test-button"
+            onClick={handleTestASR}
+            disabled={testingASR}
+          >
+            {testingASR ? 'Testing...' : 'Test Recognition'}
+          </button>
+          <span className="test-hint">
+            Click and speak for 2 seconds to test the selected provider
+          </span>
         </div>
       </section>
 

@@ -4,13 +4,13 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { IPC_CHANNELS, DEFAULT_SETTINGS, AppSettings, ModelStatus, ModelDownloadState } from '../shared/types'
 import Store from 'electron-store'
 import { AudioCapture } from './audio/capture'
-import { ASREngine } from './asr/engine'
 import { LLMEngine } from './llm/engine'
 import { TextInjector } from './injector/injector'
 import { ModelDownloader, MODELS } from './model/downloader'
 import { OpusEncoder } from './audio/opusEncoder'
 import { runMigrations } from './db/index'
 import { saveTranscription, getHistory, deleteTranscription, getHistoryCount } from './db/repository'
+import { createASRProvider, ASRProviderInterface } from './asr/providerFactory'
 
 // electron-store v10 ESM types don't resolve properly with moduleResolution: "node"
 const store = new Store() as unknown as { get(key: string, defaultValue?: unknown): unknown; set(key: string, value: unknown): void }
@@ -23,7 +23,7 @@ let settings: AppSettings = { ...DEFAULT_SETTINGS }
 
 // Core engines
 let audioCapture: AudioCapture | null = null
-let asrEngine: ASREngine | null = null
+let asrEngine: ASRProviderInterface | null = null
 let llmEngine: LLMEngine | null = null
 let textInjector: TextInjector | null = null
 let modelDownloader: ModelDownloader | null = null
@@ -184,7 +184,7 @@ function registerGlobalShortcut(): void {
 
 async function initializeEngines(): Promise<void> {
   audioCapture = new AudioCapture()
-  asrEngine = new ASREngine()
+  asrEngine = createASRProvider(settings.asrProvider, settings.cloudApiConfig)
   llmEngine = new LLMEngine()
   textInjector = new TextInjector()
   opusEncoder = new OpusEncoder()
@@ -256,7 +256,9 @@ async function initializeEngines(): Promise<void> {
   })
 
   // Initialize engines (load models)
-  await asrEngine.initialize()
+  if (asrEngine.initialize) {
+    await asrEngine.initialize()
+  }
   await llmEngine.initialize()
 }
 
@@ -329,11 +331,49 @@ function setupIPC(): void {
     return settings
   })
 
-  ipcMain.handle(IPC_CHANNELS.SET_SETTINGS, (_, newSettings: Partial<AppSettings>) => {
+  ipcMain.handle(IPC_CHANNELS.SET_SETTINGS, async (_, newSettings: Partial<AppSettings>) => {
+    const previousProvider = settings.asrProvider
     settings = { ...settings, ...newSettings }
 
     if (newSettings.globalHotkey) {
       registerGlobalShortcut()
+    }
+
+    // If ASR provider changed, recreate the ASR engine
+    if (newSettings.asrProvider && newSettings.asrProvider !== previousProvider) {
+      console.log('[Main] ASR provider changed, recreating engine...')
+
+      // Dispose old engine
+      if (asrEngine?.dispose) {
+        await asrEngine.dispose()
+      }
+
+      // Create new engine
+      try {
+        asrEngine = createASRProvider(settings.asrProvider, settings.cloudApiConfig)
+        if (asrEngine.initialize) {
+          await asrEngine.initialize()
+        }
+        console.log('[Main] ASR engine recreated successfully')
+      } catch (error) {
+        console.error('[Main] Failed to create ASR provider:', error)
+      }
+    }
+
+    // If cloud API config changed for OpenAI provider, recreate
+    if (newSettings.cloudApiConfig && settings.asrProvider === 'cloud-openai') {
+      console.log('[Main] Cloud API config changed, recreating engine...')
+
+      if (asrEngine?.dispose) {
+        await asrEngine.dispose()
+      }
+
+      try {
+        asrEngine = createASRProvider(settings.asrProvider, settings.cloudApiConfig)
+        console.log('[Main] ASR engine recreated with new API key')
+      } catch (error) {
+        console.error('[Main] Failed to recreate ASR provider:', error)
+      }
     }
 
     return settings
@@ -371,7 +411,7 @@ function setupIPC(): void {
       await modelDownloader.downloadModel(modelType, modelId)
 
       // After download, try to initialize the engine
-      if (modelType === 'whisper' && asrEngine) {
+      if (modelType === 'whisper' && asrEngine && asrEngine.initialize) {
         await asrEngine.initialize()
       } else if (modelType === 'llm' && llmEngine) {
         await llmEngine.initialize()
@@ -403,7 +443,7 @@ async function autoDownloadModels(): Promise<void> {
     modelDownloader.downloadModel('whisper', whisperModelId)
       .then(() => {
         console.log('[Main] Whisper model downloaded, initializing ASR engine...')
-        return asrEngine?.initialize()
+        return asrEngine?.initialize?.()
       })
       .catch((err) => console.error('[Main] Whisper download error:', err))
   }

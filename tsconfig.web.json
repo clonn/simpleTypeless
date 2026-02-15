@@ -12,5 +12,8 @@
   "include": [
     "src/renderer/src/**/*",
     "src/shared/**/*"
+  ],
+  "exclude": [
+    "src/**/*.test.ts"
   ]
 }
