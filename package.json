@@ -1,7 +1,7 @@
 {
   "name": "Typeless",
   "version": "1.0.0",
-  "main": "dist/main/index.js",
+  "main": "out/main/index.js",
   "description": "Electron Vite React boilerplate.",
   "author": "",
   "license": "MIT",
@@ -44,7 +44,7 @@
     "notistack": "^3.0.2",
     "plist": "^3.1.0",
     "sqlite3": "^5.1.7",
-    "undici": "^7.16.0"
+    "undici": "^6.23.0"
   },
   "resolutions": {
     "@types/react": "^18.3.1",
