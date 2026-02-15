@@ -90,7 +90,7 @@ export class TextInjector {
     // For longer text, use clipboard paste
     // This is faster and more reliable for large amounts of text
 
-    const escapedText = text.replace(/"/g, '\\"').replace(/\\/g, '\\\\')
+    const escapedText = this.escapeForAppleScript(text)
 
     // Save current clipboard, set new content, paste, restore
     const script = `

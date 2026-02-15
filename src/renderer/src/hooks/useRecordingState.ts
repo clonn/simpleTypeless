@@ -13,6 +13,12 @@ declare global {
       // Model status and download
       getModelStatus: () => Promise<ModelStatus>
       downloadModel: (modelType: 'whisper' | 'llm') => Promise<void>
+      // History
+      getHistory: (limit?: number, offset?: number) => Promise<unknown[]>
+      deleteHistory: (id: string) => Promise<void>
+      getHistoryCount: () => Promise<number>
+      // Onboarding
+      completeOnboarding: () => Promise<void>
       // Event listeners
       onRecordingStateChanged: (callback: (state: RecordingState) => void) => () => void
       onTranscriptionPartial: (callback: (data: { rawText: string }) => void) => () => void

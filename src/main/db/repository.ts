@@ -45,8 +45,8 @@ export function getHistory(limit = 50, offset = 0) {
 
 export function getHistoryCount(): number {
   const db = getDb()
-  const result = db.select({ count: schema.history.id }).from(schema.history).all()
-  return result.length
+  const result = db.select({ value: schema.history.id }).from(schema.history).all()
+  return result.length // TODO: Use SQL count() aggregate when drizzle-orm count import is available
 }
 
 export function deleteTranscription(id: string): void {

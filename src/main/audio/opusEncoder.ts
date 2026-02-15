@@ -28,7 +28,7 @@ export class OpusEncoder {
    * @returns Absolute path to the written audio file
    */
   async encode(audioBuffer: Float32Array, filename: string): Promise<string> {
-    const outputPath = join(this.recordingsDir, `${filename}.ogg`)
+    const outputPath = join(this.recordingsDir, `${filename}.wav`)
 
     return new Promise((resolve, reject) => {
       // The worker is built as a separate entry point by electron-vite.

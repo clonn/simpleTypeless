@@ -523,17 +523,14 @@ body {
 }
 
 .status-circle-recording {
-  background: var(--accent);
   animation: pulse-recording 2s ease-in-out infinite;
 }
 
 .status-circle-processing {
-  background: var(--warning);
   animation: pulse-processing 2s ease-in-out infinite;
 }
 
 .status-circle-ready {
-  background: var(--success);
   transition: background 0.3s ease;
 }
 

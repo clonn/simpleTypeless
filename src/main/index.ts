@@ -230,20 +230,19 @@ async function initializeEngines(): Promise<void> {
       // Await audio encoding result (should already be done by now)
       const audioPath = await audioPathPromise
 
+      // Save to database first (before broadcast so renderer sees the new record)
+      saveTranscription(
+        { rawText, rewrittenText, timestamp: Date.now(), duration: audioBuffer.length / 16000 },
+        appContext
+      )
+
       broadcastToRenderers(IPC_CHANNELS.TRANSCRIPTION_COMPLETE, {
         rawText,
         rewrittenText,
         timestamp: Date.now(),
         duration: audioBuffer.length / 16000,
-        appContext,
-        audioPath
-      })
-
-      // Save to database
-      saveTranscription(
-        { rawText, rewrittenText, timestamp: Date.now(), duration: audioBuffer.length / 16000 },
         appContext
-      )
+      })
     } catch (error) {
       console.error('Processing error:', error)
     }

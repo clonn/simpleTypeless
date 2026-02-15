@@ -31,7 +31,7 @@ export function Onboarding() {
       setCurrentStep(currentStep + 1)
     } else {
       // Close onboarding
-      window.api.completeOnboarding()
+      await window.api?.completeOnboarding()
     }
   }
 

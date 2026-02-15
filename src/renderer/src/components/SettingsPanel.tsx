@@ -77,6 +77,15 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
             onChange={(e) => onChange({ showFloatingWidget: e.target.checked })}
           />
         </div>
+
+        <div className="setting-item">
+          <label>Enable sounds</label>
+          <input
+            type="checkbox"
+            checked={settings.enableSounds}
+            onChange={(e) => onChange({ enableSounds: e.target.checked })}
+          />
+        </div>
       </section>
 
       <section className="settings-section">

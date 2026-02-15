@@ -1,4 +1,4 @@
-import { sqliteTable, text, real, integer, blob, index, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { sqliteTable, text, real, blob, index } from 'drizzle-orm/sqlite-core'
 
 export const history = sqliteTable('history', {
   id: text('id').primaryKey().notNull(),
@@ -25,7 +25,6 @@ export const history = sqliteTable('history', {
   createdAt: text('created_at'),
   updatedAt: text('updated_at'),
 }, (table) => [
-  uniqueIndex('history_id_unique').on(table.id),
   index('idx_history_status').on(table.status),
   index('idx_history_created_at').on(table.createdAt),
   index('idx_history_app_name_created_at').on(table.focusedAppName, table.createdAt),

@@ -53,11 +53,9 @@ try {
   wavHeader.write('data', 36)
   wavHeader.writeUInt32LE(dataLength, 40)
 
-  // Write as .wav (outputPath may end in .ogg, so replace extension)
-  const wavPath = outputPath.replace(/\.ogg$/, '.wav')
-  writeFileSync(wavPath, Buffer.concat([wavHeader, Buffer.from(pcmData.buffer)]))
+  writeFileSync(outputPath, Buffer.concat([wavHeader, Buffer.from(pcmData.buffer)]))
 
-  parentPort?.postMessage({ type: 'done', path: wavPath })
+  parentPort?.postMessage({ type: 'done', path: outputPath })
 } catch (error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
   parentPort?.postMessage({ type: 'error', error: message })
