@@ -69,6 +69,13 @@ const api = {
   downloadUpdate: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.DOWNLOAD_UPDATE),
   installUpdate: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.INSTALL_UPDATE),
 
+  onHotkeyStatus: (callback: (data: { registered: boolean; hotkey: string; error?: string }) => void): (() => void) => {
+    const listener = (_: Electron.IpcRendererEvent, data: { registered: boolean; hotkey: string; error?: string }): void =>
+      callback(data)
+    ipcRenderer.on(IPC_CHANNELS.HOTKEY_STATUS, listener)
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.HOTKEY_STATUS, listener)
+  },
+
   onUpdateStatus: (callback: (data: { event: string; version?: string; percent?: number }) => void): (() => void) => {
     const listener = (_: Electron.IpcRendererEvent, data: { event: string; version?: string; percent?: number }): void =>
       callback(data)
