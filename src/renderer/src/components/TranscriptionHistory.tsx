@@ -57,6 +57,18 @@ export function TranscriptionHistory({
     overscan: 5
   })
 
+  const handleExport = async (format: 'csv' | 'json'): Promise<void> => {
+    if (!window.api?.exportHistory) return
+    const data = await window.api.exportHistory(format)
+    const blob = new Blob([data], { type: format === 'json' ? 'application/json' : 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `transcriptions.${format}`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   if (history.length === 0) {
     return (
       <div className="transcription-history empty">
@@ -80,7 +92,13 @@ export function TranscriptionHistory({
 
   return (
     <div className="transcription-history">
-      <h3>Recent Transcriptions</h3>
+      <div className="history-header-row">
+        <h3>Recent Transcriptions</h3>
+        <div className="history-export-buttons">
+          <button className="export-btn" onClick={() => handleExport('json')} title="Export as JSON">JSON</button>
+          <button className="export-btn" onClick={() => handleExport('csv')} title="Export as CSV">CSV</button>
+        </div>
+      </div>
       <div ref={parentRef} className="history-list" style={{ height: '400px', overflow: 'auto' }}>
         <div
           style={{

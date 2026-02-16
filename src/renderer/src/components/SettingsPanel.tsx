@@ -283,6 +283,66 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
       </div>
 
       <div className="card">
+        <h3 className="card-title">Custom Writing Modes</h3>
+
+        {(settings.customPromptModes || []).map((mode, index) => (
+          <div key={mode.id} className="custom-prompt-item">
+            <div className="custom-prompt-header">
+              <input
+                type="text"
+                value={mode.name}
+                onChange={(e) => {
+                  const updated = [...(settings.customPromptModes || [])]
+                  updated[index] = { ...updated[index], name: e.target.value }
+                  onChange({ customPromptModes: updated })
+                }}
+                placeholder="Mode name"
+              />
+              <button
+                className={`mode-button ${settings.promptMode === mode.id ? 'active' : ''}`}
+                onClick={() => onChange({ promptMode: mode.id })}
+              >
+                Use
+              </button>
+              <button
+                className="delete-btn"
+                onClick={() => {
+                  const updated = (settings.customPromptModes || []).filter((_, i) => i !== index)
+                  onChange({ customPromptModes: updated })
+                }}
+              >
+                {'\u2715'}
+              </button>
+            </div>
+            <textarea
+              value={mode.systemPrompt}
+              onChange={(e) => {
+                const updated = [...(settings.customPromptModes || [])]
+                updated[index] = { ...updated[index], systemPrompt: e.target.value }
+                onChange({ customPromptModes: updated })
+              }}
+              placeholder="System prompt..."
+              rows={4}
+            />
+          </div>
+        ))}
+
+        <button
+          className="add-prompt-btn"
+          onClick={() => {
+            const newMode = {
+              id: `custom-${Date.now()}`,
+              name: 'New Mode',
+              systemPrompt: 'You are a helpful assistant. Rewrite the following speech transcript:\n\nGuidelines:\n- Remove filler words\n- Fix grammar\n- Output only the rewritten text'
+            }
+            onChange({ customPromptModes: [...(settings.customPromptModes || []), newMode] })
+          }}
+        >
+          + Add Custom Mode
+        </button>
+      </div>
+
+      <div className="card">
         <h3 className="card-title">Model Profile</h3>
 
         <div className="profile-selector">

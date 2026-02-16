@@ -25,6 +25,8 @@ const api = {
     ipcRenderer.invoke(IPC_CHANNELS.DELETE_HISTORY, id),
   getHistoryCount: () =>
     ipcRenderer.invoke(IPC_CHANNELS.GET_HISTORY_COUNT),
+  exportHistory: (format: 'csv' | 'json'): Promise<string> =>
+    ipcRenderer.invoke(IPC_CHANNELS.EXPORT_HISTORY, format),
 
   // Onboarding
   completeOnboarding: (): Promise<void> =>
