@@ -1,0 +1,46 @@
+appId: com.cympotek.typeless
+productName: Typeless
+copyright: Copyright © 2024-2026 Cympotek
+
+directories:
+  buildResources: build
+  output: dist
+
+files:
+  - out/**/*
+  - "!out/**/*.map"
+
+extraResources:
+  - from: resources/sounds/
+    to: sounds/
+    filter:
+      - "**/*"
+  - from: resources/models/
+    to: models/
+    filter:
+      - "**/*.gitkeep"
+
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.icns
+  hardenedRuntime: true
+  gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  target:
+    - target: dmg
+      arch:
+        - universal
+    - target: zip
+      arch:
+        - universal
+
+dmg:
+  artifactName: "${productName}-${version}-universal.${ext}"
+  title: "${productName} ${version}"
+
+publish:
+  provider: github
+  owner: clonn
+  repo: simpleTypeless
+  releaseType: release
