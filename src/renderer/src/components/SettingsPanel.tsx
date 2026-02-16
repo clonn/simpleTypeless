@@ -3,6 +3,17 @@ import type { AppSettings, ASRProvider } from '@shared/types'
 import { DEFAULT_PROMPT_MODES } from '@shared/types'
 import { MODEL_PROFILES, getProfileById } from '@shared/models'
 
+/** Convert Electron hotkey format to macOS symbols */
+function formatHotkeySymbols(hotkey: string): string {
+  return hotkey
+    .replace(/CommandOrControl/gi, '\u2318')
+    .replace(/Command/gi, '\u2318')
+    .replace(/Control/gi, '\u2303')
+    .replace(/Alt/gi, '\u2325')
+    .replace(/Shift/gi, '\u21E7')
+    .replace(/\+/g, '')
+}
+
 interface SettingsPanelProps {
   settings: AppSettings | null
   onChange: (settings: Partial<AppSettings>) => void
@@ -103,9 +114,14 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
               readOnly
             />
           ) : (
-            <button className="hotkey-display" onClick={() => setEditingHotkey(true)}>
-              {settings.globalHotkey}
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+              <button className="hotkey-display" onClick={() => setEditingHotkey(true)}>
+                {settings.globalHotkey}
+              </button>
+              <span className="setting-hint">
+                {formatHotkeySymbols(settings.globalHotkey)} — click to change
+              </span>
+            </div>
           )}
         </div>
 

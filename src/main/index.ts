@@ -187,6 +187,8 @@ function updateTrayMenu(): void {
   const contextMenu = Menu.buildFromTemplate([
     {
       label: isRecording ? 'Stop Recording' : 'Start Recording',
+      accelerator: settings.globalHotkey,
+      registerAccelerator: false,
       click: async () => {
         if (isRecording) {
           await stopRecording()
@@ -199,6 +201,8 @@ function updateTrayMenu(): void {
     { type: 'separator' },
     {
       label: 'Open Settings',
+      accelerator: 'CommandOrControl+,',
+      registerAccelerator: false,
       click: () => {
         if (mainWindow) {
           mainWindow.show()
@@ -228,6 +232,7 @@ function updateTrayMenu(): void {
     { type: 'separator' },
     {
       label: 'Quit',
+      accelerator: 'CommandOrControl+Q',
       click: () => {
         app.quit()
       }
