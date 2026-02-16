@@ -13,9 +13,14 @@ const SAMPLE_RATE = 16000
 
 export class CloudOpenAIProvider {
   private apiKey: string
+  private language: string = 'en'
 
   constructor(apiKey: string) {
     this.apiKey = apiKey
+  }
+
+  setLanguage(language: string): void {
+    this.language = language === 'auto' ? 'en' : language
   }
 
   get isLoaded(): boolean {
@@ -51,11 +56,11 @@ export class CloudOpenAIProvider {
         `whisper-1\r\n`
       ))
 
-      // Add language field (auto-detect)
+      // Add language field
       formData.push(Buffer.from(
         `--${boundary}\r\n` +
         `Content-Disposition: form-data; name="language"\r\n\r\n` +
-        `en\r\n`
+        `${this.language}\r\n`
       ))
 
       // Close boundary

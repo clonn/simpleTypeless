@@ -265,6 +265,20 @@ export class ASREngine {
     return mockPhrases[Math.floor(Math.random() * mockPhrases.length)]
   }
 
+  setLanguage(language: string): void {
+    this.config.language = language
+    if (language === 'auto') {
+      this.config.initialPrompt =
+        'The following is a discussion containing both Chinese and English technical terms. Please transcribe verbatim.'
+    } else if (language === 'zh') {
+      this.config.initialPrompt = '以下是中文語音內容，請逐字轉錄。'
+    } else if (language === 'en') {
+      this.config.initialPrompt = 'The following is English speech. Please transcribe verbatim.'
+    } else {
+      this.config.initialPrompt = 'Please transcribe verbatim.'
+    }
+  }
+
   async dispose(): Promise<void> {
     if (this.whisperProcess) {
       this.whisperProcess.kill()

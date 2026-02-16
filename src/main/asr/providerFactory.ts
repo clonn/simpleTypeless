@@ -13,6 +13,7 @@ export interface ASRProviderInterface {
   transcribe(audioBuffer: Float32Array): Promise<string>
   initialize?(): Promise<void>
   dispose?(): Promise<void>
+  setLanguage?(language: string): void
   get isLoaded(): boolean
 }
 

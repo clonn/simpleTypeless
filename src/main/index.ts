@@ -297,6 +297,9 @@ function registerGlobalShortcut(): void {
 async function initializeEngines(): Promise<void> {
   audioCapture = new AudioCapture()
   asrEngine = createASRProvider(settings.asrProvider, settings.cloudApiConfig)
+  if (asrEngine.setLanguage) {
+    asrEngine.setLanguage(settings.transcriptionLanguage)
+  }
   llmEngine = new LLMEngine()
   textInjector = new TextInjector()
   opusEncoder = new OpusEncoder()
@@ -491,6 +494,10 @@ function setupIPC(): void {
       } catch (error) {
         console.error('[Main] Failed to recreate ASR provider:', error)
       }
+    }
+
+    if (newSettings.transcriptionLanguage && asrEngine?.setLanguage) {
+      asrEngine.setLanguage(newSettings.transcriptionLanguage)
     }
 
     return settings

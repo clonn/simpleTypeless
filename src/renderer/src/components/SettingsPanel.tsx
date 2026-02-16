@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import type { AppSettings, ASRProvider } from '@shared/types'
-import { DEFAULT_PROMPT_MODES } from '@shared/types'
+import { DEFAULT_PROMPT_MODES, WHISPER_LANGUAGES } from '@shared/types'
 import { MODEL_PROFILES, getProfileById } from '@shared/models'
 
 /** Convert Electron hotkey format to macOS symbols */
@@ -247,6 +247,30 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
               <span className="provider-desc">Uses OpenAI Whisper API</span>
             </div>
           </label>
+        </div>
+
+        <div className="setting-item">
+          <label>Transcription Language</label>
+          <select
+            value={settings.transcriptionLanguage || 'auto'}
+            onChange={(e) => onChange({ transcriptionLanguage: e.target.value as any })}
+            style={{
+              padding: '6px 10px',
+              background: 'var(--bg-tertiary)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-primary)',
+              fontSize: '13px',
+              fontFamily: 'inherit',
+              cursor: 'pointer'
+            }}
+          >
+            {WHISPER_LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {settings.asrProvider === 'cloud-openai' && (

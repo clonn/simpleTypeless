@@ -141,6 +141,30 @@ export interface CustomPromptMode {
   systemPrompt: string
 }
 
+export const WHISPER_LANGUAGES = [
+  { code: 'auto', name: 'Auto-detect' },
+  { code: 'en', name: 'English' },
+  { code: 'zh', name: 'Chinese' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'ko', name: 'Korean' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'fr', name: 'French' },
+  { code: 'de', name: 'German' },
+  { code: 'pt', name: 'Portuguese' },
+  { code: 'ru', name: 'Russian' },
+  { code: 'ar', name: 'Arabic' },
+  { code: 'hi', name: 'Hindi' },
+  { code: 'it', name: 'Italian' },
+  { code: 'nl', name: 'Dutch' },
+  { code: 'pl', name: 'Polish' },
+  { code: 'th', name: 'Thai' },
+  { code: 'vi', name: 'Vietnamese' },
+  { code: 'id', name: 'Indonesian' },
+  { code: 'tr', name: 'Turkish' },
+] as const
+
+export type WhisperLanguage = typeof WHISPER_LANGUAGES[number]['code']
+
 export interface AppSettings {
   globalHotkey: string
   hotkeyMode: HotkeyMode
@@ -152,6 +176,7 @@ export interface AppSettings {
   asrProvider: ASRProvider
   cloudApiConfig: CloudAPIConfig
   customPromptModes: CustomPromptMode[]
+  transcriptionLanguage: WhisperLanguage
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -164,7 +189,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   enableSounds: true,
   asrProvider: 'local-whisper',
   cloudApiConfig: {},
-  customPromptModes: []
+  customPromptModes: [],
+  transcriptionLanguage: 'auto'
 }
 
 // IPC Channel names

@@ -40,6 +40,10 @@ describe('types', () => {
       expect(DEFAULT_SETTINGS.customPromptModes).toEqual([])
     })
 
+    it('should have transcriptionLanguage default', () => {
+      expect(DEFAULT_SETTINGS.transcriptionLanguage).toBe('auto')
+    })
+
     it('should have valid hotkey format', () => {
       const hotkey = DEFAULT_SETTINGS.globalHotkey
       expect(hotkey).toMatch(/^[A-Za-z+]+$/)
