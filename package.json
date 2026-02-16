@@ -1,6 +1,6 @@
 {
   "name": "Typeless",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "out/main/index.js",
   "description": "Voice-to-text transcription app with AI rewriting",
   "author": "Cympotek",
