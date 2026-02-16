@@ -3,6 +3,7 @@ import { useSnackbar } from 'notistack'
 import { useRecordingState } from './hooks/useRecordingState'
 import { useModelStatus } from './hooks/useModelStatus'
 import { SettingsPanel } from './components/SettingsPanel'
+import { UpdateBanner } from './components/UpdateBanner'
 import { TranscriptionHistory } from './components/TranscriptionHistory'
 import { StatusIndicator } from './components/StatusIndicator'
 import { ModelStatusPanel } from './components/ModelStatusPanel'
@@ -145,6 +146,7 @@ function App(): JSX.Element {
       </aside>
 
       <main className="app-content">
+        <UpdateBanner />
         <div key={activeTab} className="view-enter">
           {activeTab === 'status' && (
             <div className="status-view">
