@@ -5,6 +5,7 @@ describe('types', () => {
   describe('DEFAULT_SETTINGS', () => {
     it('should have all required fields', () => {
       expect(DEFAULT_SETTINGS).toHaveProperty('globalHotkey')
+      expect(DEFAULT_SETTINGS).toHaveProperty('hotkeyMode')
       expect(DEFAULT_SETTINGS).toHaveProperty('promptMode')
       expect(DEFAULT_SETTINGS).toHaveProperty('autoInject')
       expect(DEFAULT_SETTINGS).toHaveProperty('showFloatingWidget')
@@ -14,6 +15,7 @@ describe('types', () => {
 
     it('should have correct types', () => {
       expect(typeof DEFAULT_SETTINGS.globalHotkey).toBe('string')
+      expect(typeof DEFAULT_SETTINGS.hotkeyMode).toBe('string')
       expect(typeof DEFAULT_SETTINGS.promptMode).toBe('string')
       expect(typeof DEFAULT_SETTINGS.autoInject).toBe('boolean')
       expect(typeof DEFAULT_SETTINGS.showFloatingWidget).toBe('boolean')
@@ -28,6 +30,10 @@ describe('types', () => {
       expect(DEFAULT_SETTINGS.showFloatingWidget).toBe(true)
       expect(DEFAULT_SETTINGS.modelProfileId).toBe('balanced')
       expect(DEFAULT_SETTINGS.enableSounds).toBe(true)
+    })
+
+    it('should have hotkeyMode default', () => {
+      expect(DEFAULT_SETTINGS.hotkeyMode).toBe('toggle')
     })
 
     it('should have valid hotkey format', () => {

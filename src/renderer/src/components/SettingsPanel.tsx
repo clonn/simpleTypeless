@@ -109,6 +109,29 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
           )}
         </div>
 
+        <div className="setting-item hotkey-mode-item">
+          <label>Hotkey Mode</label>
+          <div className="hotkey-mode-selector">
+            <button
+              className={`mode-button ${settings.hotkeyMode === 'toggle' ? 'active' : ''}`}
+              onClick={() => onChange({ hotkeyMode: 'toggle' })}
+            >
+              Toggle
+            </button>
+            <button
+              className={`mode-button ${settings.hotkeyMode === 'push-to-talk' ? 'active' : ''}`}
+              onClick={() => onChange({ hotkeyMode: 'push-to-talk' })}
+            >
+              Push-to-Talk
+            </button>
+          </div>
+          <span className="setting-hint">
+            {settings.hotkeyMode === 'toggle'
+              ? 'Press once to start, press again to stop'
+              : 'Press to start, press again to stop (auto-stops after 30s)'}
+          </span>
+        </div>
+
         <div className="setting-item">
           <label>Auto-inject text</label>
           <input
