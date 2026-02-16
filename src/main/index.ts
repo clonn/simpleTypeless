@@ -12,6 +12,7 @@ import { runMigrations } from './db/index'
 import { saveTranscription, getHistory, deleteTranscription, getHistoryCount } from './db/repository'
 import { createASRProvider, ASRProviderInterface } from './asr/providerFactory'
 import { initAutoUpdater, checkForUpdates, downloadUpdate, installUpdate } from './updater'
+import { initSentry } from './sentry'
 
 // electron-store v10 ESM types don't resolve properly with moduleResolution: "node"
 const store = new Store() as unknown as { get(key: string, defaultValue?: unknown): unknown; set(key: string, value: unknown): void }
@@ -573,6 +574,8 @@ async function autoDownloadModels(): Promise<void> {
 }
 
 app.whenReady().then(async () => {
+  // Initialize error tracking
+  initSentry()
   electronApp.setAppUserModelId('com.cympotek.localtypeless')
 
   app.on('browser-window-created', (_, window) => {
