@@ -19,6 +19,10 @@ extraResources:
     to: models/
     filter:
       - "**/*.gitkeep"
+  - from: resources/bin/
+    to: bin/
+    filter:
+      - "**/*"
 
 mac:
   category: public.app-category.productivity

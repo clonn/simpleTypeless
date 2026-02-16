@@ -13,6 +13,7 @@ import { saveTranscription, getHistory, deleteTranscription, getHistoryCount, ge
 import { createASRProvider, ASRProviderInterface } from './asr/providerFactory'
 import { initAutoUpdater, checkForUpdates, downloadUpdate, installUpdate } from './updater'
 import { initSentry } from './sentry'
+import { KeyboardHelper, KeyEvent } from './native/keyboardHelper'
 
 const ALTERNATIVE_HOTKEYS = [
   'CommandOrControl+Shift+Space',
@@ -37,6 +38,7 @@ let llmEngine: LLMEngine | null = null
 let textInjector: TextInjector | null = null
 let modelDownloader: ModelDownloader | null = null
 let opusEncoder: OpusEncoder | null = null
+let keyboardHelper: KeyboardHelper | null = null
 
 function createFloatingWidget(): void {
   const savedWidgetBounds = store.get('widgetBounds') as { x: number; y: number } | undefined
@@ -376,6 +378,24 @@ async function initializeEngines(): Promise<void> {
     await asrEngine.initialize()
   }
   await llmEngine.initialize()
+
+  // Start native keyboard helper for true push-to-talk
+  keyboardHelper = new KeyboardHelper()
+  if (keyboardHelper.start()) {
+    console.log('[Main] KeyboardHelper started for push-to-talk')
+    keyboardHelper.on('keyEvent', (event: KeyEvent) => {
+      // Only handle key-up events in push-to-talk mode while recording
+      if (
+        event.type === 'keyUp' &&
+        settings.hotkeyMode === 'push-to-talk' &&
+        audioCapture?.isRecording
+      ) {
+        stopRecording()
+      }
+    })
+  } else {
+    console.log('[Main] KeyboardHelper unavailable, using timeout fallback for push-to-talk')
+  }
 }
 
 async function startRecording(): Promise<void> {
@@ -710,4 +730,5 @@ app.on('will-quit', () => {
   globalShortcut.unregisterAll()
   audioCapture?.stop()
   opusEncoder?.destroy()
+  keyboardHelper?.stop()
 })
