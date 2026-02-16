@@ -11,6 +11,7 @@ import { OpusEncoder } from './audio/opusEncoder'
 import { runMigrations } from './db/index'
 import { saveTranscription, getHistory, deleteTranscription, getHistoryCount } from './db/repository'
 import { createASRProvider, ASRProviderInterface } from './asr/providerFactory'
+import { initAutoUpdater, checkForUpdates, downloadUpdate, installUpdate } from './updater'
 
 // electron-store v10 ESM types don't resolve properly with moduleResolution: "node"
 const store = new Store() as unknown as { get(key: string, defaultValue?: unknown): unknown; set(key: string, value: unknown): void }
@@ -421,6 +422,18 @@ function setupIPC(): void {
     }
   })
 
+  ipcMain.handle(IPC_CHANNELS.CHECK_FOR_UPDATES, () => {
+    checkForUpdates()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.DOWNLOAD_UPDATE, () => {
+    downloadUpdate()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.INSTALL_UPDATE, () => {
+    installUpdate()
+  })
+
   ipcMain.handle(IPC_CHANNELS.ASR_STATUS, async () => {
     try {
       const { ASREngine } = await import('./asr/engine')
@@ -502,6 +515,13 @@ app.whenReady().then(async () => {
   createFloatingWidget()
   createMainWindow()
   registerGlobalShortcut()
+
+  // Initialize auto-updater (in production only)
+  if (!is.dev && mainWindow) {
+    initAutoUpdater(mainWindow)
+    // Check for updates 5 seconds after launch
+    setTimeout(() => checkForUpdates(), 5000)
+  }
 
   // Initialize AI engines in background
   initializeEngines().catch(console.error)

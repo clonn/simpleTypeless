@@ -60,6 +60,18 @@ const api = {
       callback(state)
     ipcRenderer.on(IPC_CHANNELS.MODEL_DOWNLOAD_PROGRESS, listener)
     return () => ipcRenderer.removeListener(IPC_CHANNELS.MODEL_DOWNLOAD_PROGRESS, listener)
+  },
+
+  // Updates
+  checkForUpdates: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.CHECK_FOR_UPDATES),
+  downloadUpdate: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.DOWNLOAD_UPDATE),
+  installUpdate: (): Promise<void> => ipcRenderer.invoke(IPC_CHANNELS.INSTALL_UPDATE),
+
+  onUpdateStatus: (callback: (data: { event: string; version?: string; percent?: number }) => void): (() => void) => {
+    const listener = (_: Electron.IpcRendererEvent, data: { event: string; version?: string; percent?: number }): void =>
+      callback(data)
+    ipcRenderer.on(IPC_CHANNELS.UPDATE_STATUS, listener)
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.UPDATE_STATUS, listener)
   }
 }
 
