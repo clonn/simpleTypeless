@@ -13,6 +13,13 @@ import { saveTranscription, getHistory, deleteTranscription, getHistoryCount } f
 import { createASRProvider, ASRProviderInterface } from './asr/providerFactory'
 import { initAutoUpdater, checkForUpdates, downloadUpdate, installUpdate } from './updater'
 
+const ALTERNATIVE_HOTKEYS = [
+  'CommandOrControl+Shift+Space',
+  'CommandOrControl+Shift+S',
+  'CommandOrControl+Alt+Space',
+  'CommandOrControl+Shift+R'
+]
+
 // electron-store v10 ESM types don't resolve properly with moduleResolution: "node"
 const store = new Store() as unknown as { get(key: string, defaultValue?: unknown): unknown; set(key: string, value: unknown): void }
 
@@ -232,7 +239,7 @@ function updateTrayMenu(): void {
 function registerGlobalShortcut(): void {
   globalShortcut.unregisterAll()
 
-  const registered = globalShortcut.register(settings.globalHotkey, async () => {
+  const hotkeyCallback = async (): Promise<void> => {
     if (audioCapture?.isRecording) {
       await stopRecording()
     } else {
@@ -247,11 +254,38 @@ function registerGlobalShortcut(): void {
         }, 30000) // 30 second max
       }
     }
-  })
-
-  if (!registered) {
-    console.error('Failed to register global shortcut:', settings.globalHotkey)
   }
+
+  const registered = globalShortcut.register(settings.globalHotkey, hotkeyCallback)
+
+  if (registered) {
+    broadcastToRenderers(IPC_CHANNELS.HOTKEY_STATUS, {
+      registered: true,
+      hotkey: settings.globalHotkey
+    })
+    return
+  }
+
+  console.error('Failed to register global shortcut:', settings.globalHotkey)
+
+  // Try alternative hotkeys
+  let fallbackHotkey: string | null = null
+  for (const alt of ALTERNATIVE_HOTKEYS) {
+    if (alt === settings.globalHotkey) continue
+    if (globalShortcut.register(alt, hotkeyCallback)) {
+      fallbackHotkey = alt
+      break
+    }
+  }
+
+  broadcastToRenderers(IPC_CHANNELS.HOTKEY_STATUS, {
+    registered: false,
+    hotkey: settings.globalHotkey,
+    error: fallbackHotkey
+      ? `"${settings.globalHotkey}" unavailable. Using "${fallbackHotkey}" instead.`
+      : 'Hotkey is in use by another app. Change it in Settings.',
+    fallback: fallbackHotkey ?? undefined
+  })
 }
 
 async function initializeEngines(): Promise<void> {

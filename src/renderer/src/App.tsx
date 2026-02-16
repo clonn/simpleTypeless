@@ -43,6 +43,20 @@ function App(): JSX.Element {
     return unsubscribe
   }, [loadHistory])
 
+  // Notify on hotkey conflict
+  useEffect(() => {
+    if (!window.api?.onHotkeyStatus) return
+    const unsubscribe = window.api.onHotkeyStatus((data) => {
+      if (!data.registered) {
+        enqueueSnackbar(
+          `Hotkey "${data.hotkey}" is unavailable. ${data.error || 'Try a different shortcut.'}`,
+          { variant: 'warning', autoHideDuration: 8000 }
+        )
+      }
+    })
+    return unsubscribe
+  }, [])
+
   // Notify on model download completion or errors
   useEffect(() => {
     if (!window.api?.onModelDownloadProgress) return

@@ -209,5 +209,8 @@ export const IPC_CHANNELS = {
   UPDATE_STATUS: 'update:status',
   CHECK_FOR_UPDATES: 'update:check',
   DOWNLOAD_UPDATE: 'update:download',
-  INSTALL_UPDATE: 'update:install'
+  INSTALL_UPDATE: 'update:install',
+
+  // Hotkey
+  HOTKEY_STATUS: 'hotkey:status'
 } as const
