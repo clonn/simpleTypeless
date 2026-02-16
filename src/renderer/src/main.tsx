@@ -2,16 +2,19 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { SnackbarProvider } from 'notistack'
 import App from './App'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import './styles/global.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <SnackbarProvider
+    <ErrorBoundary>
+      <SnackbarProvider
       maxSnack={3}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       autoHideDuration={3000}
     >
       <App />
-    </SnackbarProvider>
+      </SnackbarProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 )
