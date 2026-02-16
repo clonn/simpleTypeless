@@ -3,6 +3,7 @@ import { useSnackbar } from 'notistack'
 import { useRecordingState } from './hooks/useRecordingState'
 import { useModelStatus } from './hooks/useModelStatus'
 import { SettingsPanel } from './components/SettingsPanel'
+import { UpdateBanner } from './components/UpdateBanner'
 import { TranscriptionHistory } from './components/TranscriptionHistory'
 import { StatusIndicator } from './components/StatusIndicator'
 import { ModelStatusPanel } from './components/ModelStatusPanel'
@@ -42,6 +43,20 @@ function App(): JSX.Element {
 
     return unsubscribe
   }, [loadHistory])
+
+  // Notify on hotkey conflict
+  useEffect(() => {
+    if (!window.api?.onHotkeyStatus) return
+    const unsubscribe = window.api.onHotkeyStatus((data) => {
+      if (!data.registered) {
+        enqueueSnackbar(
+          `Hotkey "${data.hotkey}" is unavailable. ${data.error || 'Try a different shortcut.'}`,
+          { variant: 'warning', autoHideDuration: 8000 }
+        )
+      }
+    })
+    return unsubscribe
+  }, [])
 
   // Notify on model download completion or errors
   useEffect(() => {
@@ -131,6 +146,7 @@ function App(): JSX.Element {
       </aside>
 
       <main className="app-content">
+        <UpdateBanner />
         <div key={activeTab} className="view-enter">
           {activeTab === 'status' && (
             <div className="status-view">
