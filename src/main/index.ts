@@ -30,11 +30,13 @@ let modelDownloader: ModelDownloader | null = null
 let opusEncoder: OpusEncoder | null = null
 
 function createFloatingWidget(): void {
+  const savedWidgetBounds = store.get('widgetBounds') as { x: number; y: number } | undefined
+
   floatingWidget = new BrowserWindow({
     width: 280,
     height: 56,
-    x: 100,
-    y: 100,
+    x: savedWidgetBounds?.x ?? 100,
+    y: savedWidgetBounds?.y ?? 100,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -56,6 +58,14 @@ function createFloatingWidget(): void {
   } else {
     floatingWidget.loadFile(join(__dirname, '../renderer/widget.html'))
   }
+
+  // Save widget position on move
+  floatingWidget.on('moved', () => {
+    if (floatingWidget && !floatingWidget.isDestroyed()) {
+      const bounds = floatingWidget.getBounds()
+      store.set('widgetBounds', { x: bounds.x, y: bounds.y })
+    }
+  })
 
   floatingWidget.on('closed', () => {
     floatingWidget = null
@@ -90,9 +100,14 @@ function createOnboardingWindow(): void {
 }
 
 function createMainWindow(): void {
+  // Restore saved bounds
+  const savedBounds = store.get('windowBounds') as { x: number; y: number; width: number; height: number } | undefined
+
   mainWindow = new BrowserWindow({
-    width: 860,
-    height: 600,
+    width: savedBounds?.width ?? 860,
+    height: savedBounds?.height ?? 600,
+    x: savedBounds?.x,
+    y: savedBounds?.y,
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
@@ -102,6 +117,15 @@ function createMainWindow(): void {
       nodeIntegration: false
     }
   })
+
+  // Save window position/size on move and resize
+  const saveBounds = (): void => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      store.set('windowBounds', mainWindow.getBounds())
+    }
+  }
+  mainWindow.on('moved', saveBounds)
+  mainWindow.on('resized', saveBounds)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow?.show()
@@ -129,7 +153,41 @@ function createTray(): void {
   )
   tray = new Tray(icon)
 
+  updateTrayMenu()
+  tray.setToolTip('Local Typeless')
+
+  // Click on tray icon shows/focuses main window
+  tray.on('click', () => {
+    if (mainWindow) {
+      if (mainWindow.isVisible()) {
+        mainWindow.focus()
+      } else {
+        mainWindow.show()
+      }
+    } else {
+      createMainWindow()
+    }
+  })
+}
+
+function updateTrayMenu(): void {
+  if (!tray) return
+
+  const isRecording = audioCapture?.isRecording ?? false
+
   const contextMenu = Menu.buildFromTemplate([
+    {
+      label: isRecording ? 'Stop Recording' : 'Start Recording',
+      click: async () => {
+        if (isRecording) {
+          await stopRecording()
+        } else {
+          await startRecording()
+        }
+        updateTrayMenu() // Refresh menu state
+      }
+    },
+    { type: 'separator' },
     {
       label: 'Open Settings',
       click: () => {
@@ -155,6 +213,11 @@ function createTray(): void {
     },
     { type: 'separator' },
     {
+      label: `Hotkey: ${settings.globalHotkey}`,
+      enabled: false
+    },
+    { type: 'separator' },
+    {
       label: 'Quit',
       click: () => {
         app.quit()
@@ -162,7 +225,6 @@ function createTray(): void {
     }
   ])
 
-  tray.setToolTip('Local Typeless')
   tray.setContextMenu(contextMenu)
 }
 
@@ -253,6 +315,7 @@ async function initializeEngines(): Promise<void> {
       isProcessing: false,
       vadActive: false
     })
+    updateTrayMenu()
   })
 
   // Initialize engines (load models)
@@ -270,12 +333,16 @@ async function startRecording(): Promise<void> {
   if (settings.showFloatingWidget && floatingWidget) {
     floatingWidget.show()
   }
+
+  updateTrayMenu()
 }
 
 async function stopRecording(): Promise<void> {
   if (!audioCapture) return
   playSound('record-end')
   await audioCapture.stop()
+
+  updateTrayMenu()
 }
 
 function broadcastToRenderers(channel: string, data: unknown): void {
