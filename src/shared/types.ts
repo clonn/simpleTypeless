@@ -135,6 +135,12 @@ Guidelines:
   }
 ]
 
+export interface CustomPromptMode {
+  id: string
+  name: string
+  systemPrompt: string
+}
+
 export interface AppSettings {
   globalHotkey: string
   hotkeyMode: HotkeyMode
@@ -145,6 +151,7 @@ export interface AppSettings {
   enableSounds: boolean
   asrProvider: ASRProvider
   cloudApiConfig: CloudAPIConfig
+  customPromptModes: CustomPromptMode[]
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -156,7 +163,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   modelProfileId: 'balanced',
   enableSounds: true,
   asrProvider: 'local-whisper',
-  cloudApiConfig: {}
+  cloudApiConfig: {},
+  customPromptModes: []
 }
 
 // IPC Channel names
@@ -209,5 +217,11 @@ export const IPC_CHANNELS = {
   UPDATE_STATUS: 'update:status',
   CHECK_FOR_UPDATES: 'update:check',
   DOWNLOAD_UPDATE: 'update:download',
-  INSTALL_UPDATE: 'update:install'
+  INSTALL_UPDATE: 'update:install',
+
+  // Hotkey
+  HOTKEY_STATUS: 'hotkey:status',
+
+  // Export
+  EXPORT_HISTORY: 'history:export'
 } as const

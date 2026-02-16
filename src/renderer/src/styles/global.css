@@ -1090,3 +1090,101 @@ body {
   color: var(--text-secondary);
   margin-top: 4px;
 }
+
+/* ========== Export Buttons ========== */
+.history-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.history-export-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.export-btn {
+  padding: 4px 12px;
+  font-size: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.export-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ========== Custom Prompt Editor ========== */
+.custom-prompt-item {
+  margin-bottom: 12px;
+  padding: 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.custom-prompt-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.custom-prompt-header input[type='text'] {
+  flex: 1;
+  padding: 6px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.custom-prompt-header input[type='text']:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.custom-prompt-item textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-family: inherit;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.custom-prompt-item textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.add-prompt-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--bg-primary);
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+
+.add-prompt-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

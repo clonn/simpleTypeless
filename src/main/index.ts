@@ -472,6 +472,22 @@ function setupIPC(): void {
     return getHistoryCount()
   })
 
+  ipcMain.handle(IPC_CHANNELS.EXPORT_HISTORY, async (_, format: 'csv' | 'json') => {
+    const items = getHistory(10000) // Get all history
+    if (format === 'json') {
+      return JSON.stringify(items, null, 2)
+    }
+    // CSV format
+    const headers = 'id,rawText,refinedText,duration,createdAt\n'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rows = (items as any[]).map(item => {
+      const raw = (item.rawText || '').replace(/"/g, '""')
+      const refined = (item.refinedText || '').replace(/"/g, '""')
+      return `"${item.id}","${raw}","${refined}",${item.duration || 0},"${item.createdAt || ''}"`
+    }).join('\n')
+    return headers + rows
+  })
+
   ipcMain.handle(IPC_CHANNELS.ONBOARDING_COMPLETE, () => {
     store.set('onboardingComplete', true)
     onboardingWindow?.close()
