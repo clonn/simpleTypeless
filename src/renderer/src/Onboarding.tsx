@@ -6,6 +6,11 @@ const steps = [
     description: 'Privacy-first voice-to-text that runs entirely on your Mac.',
   },
   {
+    title: 'Accessibility Permission',
+    description: 'Typeless needs accessibility access to inject transcribed text into your apps and to monitor keyboard events for push-to-talk.',
+    action: 'check-accessibility',
+  },
+  {
     title: 'Check whisper.cpp',
     description: 'Typeless uses whisper.cpp for local speech recognition with Metal GPU acceleration.',
     action: 'check-whisper',
@@ -17,7 +22,7 @@ const steps = [
   },
   {
     title: 'Grant Permissions',
-    description: 'Typeless needs microphone access for speech recognition and accessibility access for text injection.',
+    description: 'Typeless needs microphone access for speech recognition.',
     action: 'check-permissions',
   },
   {
@@ -33,6 +38,7 @@ export function Onboarding() {
     binaryFound: boolean
     modelFound: boolean
   } | null>(null)
+  const [accessibilityGranted, setAccessibilityGranted] = useState(false)
   const step = steps[currentStep]
 
   useEffect(() => {
@@ -41,6 +47,15 @@ export function Onboarding() {
         if (status) setAsrStatus(status)
       }).catch(() => {})
     }
+  }, [step.action])
+
+  useEffect(() => {
+    if (step.action !== 'check-accessibility') return
+    window.api?.checkAccessibility?.().then(setAccessibilityGranted).catch(() => {})
+    const interval = setInterval(() => {
+      window.api?.checkAccessibility?.().then(setAccessibilityGranted).catch(() => {})
+    }, 2000)
+    return () => clearInterval(interval)
   }, [step.action])
 
   const handleNext = async () => {
@@ -94,6 +109,31 @@ export function Onboarding() {
             )}
             {asrStatus.binaryFound && asrStatus.modelFound && (
               <div className="check-success">All set! whisper.cpp is ready.</div>
+            )}
+          </div>
+        )}
+
+        {step.action === 'check-accessibility' && (
+          <div className="whisper-check">
+            <div className="check-item">
+              <span className={`status-dot ${accessibilityGranted ? 'ready' : 'not-ready'}`} />
+              <span>{accessibilityGranted ? 'Accessibility access granted' : 'Accessibility access needed'}</span>
+            </div>
+            {!accessibilityGranted && (
+              <>
+                <button
+                  className="onboarding-btn-secondary"
+                  onClick={() => window.api?.openAccessibilitySettings?.()}
+                >
+                  Open System Preferences
+                </button>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '8px' }}>
+                  Find &quot;Typeless&quot; in the list and toggle it on. This page will update automatically.
+                </p>
+              </>
+            )}
+            {accessibilityGranted && (
+              <div className="check-success">Accessibility permission granted!</div>
             )}
           </div>
         )}

@@ -263,5 +263,9 @@ export const IPC_CHANNELS = {
   THEME_CHANGED: 'theme:changed',
 
   // Stats
-  GET_STATS: 'stats:get'
+  GET_STATS: 'stats:get',
+
+  // Permissions
+  CHECK_ACCESSIBILITY: 'permissions:check-accessibility',
+  OPEN_ACCESSIBILITY_SETTINGS: 'permissions:open-accessibility'
 } as const

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, globalShortcut, ipcMain, Tray, Menu, nativeImage, nativeTheme } from 'electron'
+import { app, shell, BrowserWindow, globalShortcut, ipcMain, Tray, Menu, nativeImage, nativeTheme, systemPreferences } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { IPC_CHANNELS, DEFAULT_SETTINGS, AppSettings, ModelStatus, ModelDownloadState, ASRStatus } from '../shared/types'
@@ -602,6 +602,14 @@ function setupIPC(): void {
         error: String(error)
       } satisfies ASRStatus
     }
+  })
+
+  ipcMain.handle(IPC_CHANNELS.CHECK_ACCESSIBILITY, () => {
+    return systemPreferences.isTrustedAccessibilityClient(false)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.OPEN_ACCESSIBILITY_SETTINGS, () => {
+    shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility')
   })
 }
 

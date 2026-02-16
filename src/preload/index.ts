@@ -36,6 +36,12 @@ const api = {
   // ASR Status
   getASRStatus: () => ipcRenderer.invoke(IPC_CHANNELS.ASR_STATUS),
 
+  // Permissions
+  checkAccessibility: (): Promise<boolean> =>
+    ipcRenderer.invoke(IPC_CHANNELS.CHECK_ACCESSIBILITY),
+  openAccessibilitySettings: (): Promise<void> =>
+    ipcRenderer.invoke(IPC_CHANNELS.OPEN_ACCESSIBILITY_SETTINGS),
+
   // Theme
   getTheme: (): Promise<'dark' | 'light'> => ipcRenderer.invoke(IPC_CHANNELS.GET_THEME),
   onThemeChange: (callback: (theme: 'dark' | 'light') => void): (() => void) => {
