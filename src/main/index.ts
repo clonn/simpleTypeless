@@ -21,13 +21,6 @@ const ALTERNATIVE_HOTKEYS = [
   'CommandOrControl+Shift+R'
 ]
 
-const ALTERNATIVE_HOTKEYS = [
-  'CommandOrControl+Shift+Space',
-  'CommandOrControl+Shift+S',
-  'CommandOrControl+Alt+Space',
-  'CommandOrControl+Shift+R'
-]
-
 // electron-store v10 ESM types don't resolve properly with moduleResolution: "node"
 const store = new Store() as unknown as { get(key: string, defaultValue?: unknown): unknown; set(key: string, value: unknown): void }
 
