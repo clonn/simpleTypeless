@@ -175,6 +175,15 @@ function registerGlobalShortcut(): void {
       await stopRecording()
     } else {
       await startRecording()
+
+      // Push-to-talk mode: auto-stop after maxDuration
+      if (settings.hotkeyMode === 'push-to-talk') {
+        setTimeout(async () => {
+          if (audioCapture?.isRecording) {
+            await stopRecording()
+          }
+        }, 30000) // 30 second max
+      }
     }
   })
 
@@ -336,7 +345,7 @@ function setupIPC(): void {
     const previousProvider = settings.asrProvider
     settings = { ...settings, ...newSettings }
 
-    if (newSettings.globalHotkey) {
+    if (newSettings.globalHotkey || newSettings.hotkeyMode) {
       registerGlobalShortcut()
     }
 

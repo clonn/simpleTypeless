@@ -30,6 +30,8 @@ export interface ModelConfig {
   llmModelPath: string
 }
 
+export type HotkeyMode = 'toggle' | 'push-to-talk'
+
 export type ASRProvider = 'local-whisper' | 'macos-dictation' | 'cloud-openai'
 
 export interface CloudAPIConfig {
@@ -135,6 +137,7 @@ Guidelines:
 
 export interface AppSettings {
   globalHotkey: string
+  hotkeyMode: HotkeyMode
   promptMode: string
   autoInject: boolean
   showFloatingWidget: boolean
@@ -146,6 +149,7 @@ export interface AppSettings {
 
 export const DEFAULT_SETTINGS: AppSettings = {
   globalHotkey: 'CommandOrControl+Shift+Space',
+  hotkeyMode: 'toggle',
   promptMode: 'default',
   autoInject: true,
   showFloatingWidget: true,

@@ -1074,3 +1074,19 @@ body {
   font-size: 14px;
   font-weight: 500;
 }
+
+/* ========== Hotkey Mode Selector ========== */
+.hotkey-mode-item {
+  flex-wrap: wrap;
+}
+
+.hotkey-mode-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.setting-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
