@@ -199,5 +199,11 @@ export const IPC_CHANNELS = {
   TEST_ASR: 'asr:test',
 
   // ASR Status
-  ASR_STATUS: 'asr:status'
+  ASR_STATUS: 'asr:status',
+
+  // Updates
+  UPDATE_STATUS: 'update:status',
+  CHECK_FOR_UPDATES: 'update:check',
+  DOWNLOAD_UPDATE: 'update:download',
+  INSTALL_UPDATE: 'update:install'
 } as const
