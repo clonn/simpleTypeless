@@ -1,13 +1,5 @@
 import { useModelStatus } from '../hooks/useModelStatus'
 
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
-}
-
 interface ModelCardProps {
   title: string
   modelName: string
@@ -27,11 +19,11 @@ function ModelCard({
   progress,
   onDownload
 }: ModelCardProps) {
-  const getStatusColor = () => {
-    if (loaded) return '#22c55e' // green
-    if (downloading) return '#eab308' // yellow
-    if (exists) return '#3b82f6' // blue
-    return '#ef4444' // red
+  const getStatusClass = () => {
+    if (loaded) return 'ready'
+    if (downloading) return 'downloading'
+    if (exists) return 'exists'
+    return 'missing'
   }
 
   const getStatusText = () => {
@@ -42,84 +34,22 @@ function ModelCard({
   }
 
   return (
-    <div
-      style={{
-        padding: '16px',
-        borderRadius: '8px',
-        backgroundColor: '#1a1a2e',
-        border: '1px solid #2a2a4a',
-        marginBottom: '12px'
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '8px'
-        }}
-      >
-        <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>{title}</h3>
-        <span
-          style={{
-            fontSize: '12px',
-            color: getStatusColor(),
-            fontWeight: 500
-          }}
-        >
-          {getStatusText()}
-        </span>
+    <div className="model-card">
+      <div className="model-card-header">
+        <h3 className="model-card-title">{title}</h3>
+        <span className={`model-card-status ${getStatusClass()}`}>{getStatusText()}</span>
       </div>
 
-      <p
-        style={{
-          margin: '0 0 12px 0',
-          fontSize: '12px',
-          color: '#888',
-          wordBreak: 'break-all'
-        }}
-      >
-        {modelName || 'No model configured'}
-      </p>
+      <p className="model-card-name">{modelName || 'No model configured'}</p>
 
       {downloading && (
-        <div
-          style={{
-            width: '100%',
-            height: '6px',
-            backgroundColor: '#2a2a4a',
-            borderRadius: '3px',
-            overflow: 'hidden',
-            marginBottom: '12px'
-          }}
-        >
-          <div
-            style={{
-              width: `${progress}%`,
-              height: '100%',
-              backgroundColor: '#3b82f6',
-              borderRadius: '3px',
-              transition: 'width 0.3s ease'
-            }}
-          />
+        <div className="model-card-progress">
+          <div className="model-card-progress-fill" style={{ width: `${progress}%` }} />
         </div>
       )}
 
       {!exists && !downloading && (
-        <button
-          onClick={onDownload}
-          style={{
-            width: '100%',
-            padding: '8px 16px',
-            backgroundColor: '#3b82f6',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '13px',
-            fontWeight: 500
-          }}
-        >
+        <button className="model-card-download-btn" onClick={onDownload}>
           Download Model
         </button>
       )}
@@ -132,22 +62,15 @@ export function ModelStatusPanel() {
 
   if (loading) {
     return (
-      <div style={{ padding: '16px', color: '#888' }}>
+      <div className="card" style={{ color: 'var(--text-secondary)' }}>
         Loading model status...
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '16px' }}>
-      <h2
-        style={{
-          margin: '0 0 16px 0',
-          fontSize: '16px',
-          fontWeight: 600,
-          color: '#fff'
-        }}
-      >
+    <div>
+      <h2 className="card-title" style={{ marginBottom: '16px' }}>
         AI Models
       </h2>
 
@@ -174,10 +97,10 @@ export function ModelStatusPanel() {
       {(!status.whisper.exists || !status.llm.exists) && (
         <p
           style={{
-            margin: '16px 0 0 0',
             fontSize: '12px',
-            color: '#888',
-            textAlign: 'center'
+            color: 'var(--text-secondary)',
+            textAlign: 'center',
+            marginTop: '16px'
           }}
         >
           Models will be downloaded automatically on first launch.

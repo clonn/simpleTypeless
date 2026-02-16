@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import type { AppSettings } from '@shared/types'
+import { useState, useEffect } from 'react'
+import type { AppSettings, ASRProvider } from '@shared/types'
 import { DEFAULT_PROMPT_MODES } from '@shared/types'
 import { MODEL_PROFILES, getProfileById } from '@shared/models'
 
@@ -10,6 +10,24 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.Element {
   const [editingHotkey, setEditingHotkey] = useState(false)
+  const [testingASR, setTestingASR] = useState(false)
+  const [testResult, setTestResult] = useState<string>('')
+  const [asrStatus, setAsrStatus] = useState<{
+    ready: boolean
+    binaryFound: boolean
+    modelFound: boolean
+  } | null>(null)
+
+  useEffect(() => {
+    if (settings?.asrProvider === 'local-whisper') {
+      window.api
+        ?.getASRStatus?.()
+        .then((status: any) => {
+          if (status) setAsrStatus(status)
+        })
+        .catch(() => {})
+    }
+  }, [settings?.asrProvider])
 
   if (!settings) {
     return <div className="settings-panel loading">Loading settings...</div>
@@ -37,10 +55,41 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
     }
   }
 
+  const handleProviderChange = (provider: ASRProvider): void => {
+    onChange({ asrProvider: provider })
+  }
+
+  const handleApiKeyChange = (apiKey: string): void => {
+    onChange({
+      cloudApiConfig: {
+        ...settings.cloudApiConfig,
+        openaiApiKey: apiKey
+      }
+    })
+  }
+
+  const handleTestASR = async (): Promise<void> => {
+    setTestingASR(true)
+    setTestResult('')
+    try {
+      // Test will trigger a short recording
+      await window.api?.startRecording()
+      setTimeout(async () => {
+        await window.api?.stopRecording()
+        setTestingASR(false)
+        setTestResult('Test complete. Check transcription history for result.')
+      }, 2000)
+    } catch (error) {
+      console.error('ASR test failed:', error)
+      setTestingASR(false)
+      setTestResult('Test failed. Please check your ASR configuration.')
+    }
+  }
+
   return (
     <div className="settings-panel">
-      <section className="settings-section">
-        <h3>General</h3>
+      <div className="card">
+        <h3 className="card-title">General</h3>
 
         <div className="setting-item">
           <label>Global Hotkey</label>
@@ -86,10 +135,108 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
             onChange={(e) => onChange({ enableSounds: e.target.checked })}
           />
         </div>
-      </section>
+      </div>
 
-      <section className="settings-section">
-        <h3>Writing Mode</h3>
+      <div className="card">
+        <h3 className="card-title">Speech Recognition Provider</h3>
+
+        <div className="provider-selection">
+          <label className="provider-option">
+            <input
+              type="radio"
+              name="asrProvider"
+              value="local-whisper"
+              checked={settings.asrProvider === 'local-whisper'}
+              onChange={() => handleProviderChange('local-whisper')}
+            />
+            <div className="provider-info">
+              <span className="provider-name">Local Whisper</span>
+              <span className="provider-desc">Uses local whisper.cpp model</span>
+              {settings.asrProvider === 'local-whisper' && asrStatus && (
+                <div className="provider-status">
+                  <span
+                    className={`status-dot ${asrStatus.binaryFound ? 'ready' : 'not-ready'}`}
+                  />
+                  <span className="status-text">
+                    {asrStatus.binaryFound ? 'whisper-cli found' : 'whisper-cli not found'}
+                  </span>
+                  {!asrStatus.binaryFound && (
+                    <div className="install-hint">
+                      Install: <code>brew install whisper-cpp</code>
+                    </div>
+                  )}
+                  <span
+                    className={`status-dot ${asrStatus.modelFound ? 'ready' : 'not-ready'}`}
+                  />
+                  <span className="status-text">
+                    {asrStatus.modelFound ? 'Model ready' : 'Model not downloaded'}
+                  </span>
+                </div>
+              )}
+            </div>
+          </label>
+
+          <label className="provider-option">
+            <input
+              type="radio"
+              name="asrProvider"
+              value="macos-dictation"
+              checked={settings.asrProvider === 'macos-dictation'}
+              onChange={() => handleProviderChange('macos-dictation')}
+              disabled={process.platform !== 'darwin'}
+            />
+            <div className="provider-info">
+              <span className="provider-name">macOS Dictation</span>
+              <span className="provider-desc">
+                {process.platform === 'darwin'
+                  ? 'Native macOS speech recognition (placeholder)'
+                  : 'Only available on macOS'}
+              </span>
+            </div>
+          </label>
+
+          <label className="provider-option">
+            <input
+              type="radio"
+              name="asrProvider"
+              value="cloud-openai"
+              checked={settings.asrProvider === 'cloud-openai'}
+              onChange={() => handleProviderChange('cloud-openai')}
+            />
+            <div className="provider-info">
+              <span className="provider-name">Cloud (OpenAI)</span>
+              <span className="provider-desc">Uses OpenAI Whisper API</span>
+            </div>
+          </label>
+        </div>
+
+        {settings.asrProvider === 'cloud-openai' && (
+          <div className="cloud-config">
+            <div className="setting-item">
+              <label>OpenAI API Key</label>
+              <input
+                type="password"
+                placeholder="sk-..."
+                value={settings.cloudApiConfig.openaiApiKey || ''}
+                onChange={(e) => handleApiKeyChange(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="test-section">
+          <button className="test-button" onClick={handleTestASR} disabled={testingASR}>
+            {testingASR ? 'Testing...' : 'Test Recognition'}
+          </button>
+          <span className="test-hint">
+            Click and speak for 2 seconds to test the selected provider
+          </span>
+          {testResult && <div className="test-result">{testResult}</div>}
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 className="card-title">Writing Mode</h3>
 
         <div className="prompt-modes">
           {DEFAULT_PROMPT_MODES.map((mode) => (
@@ -110,10 +257,10 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
               'Default'}
           </pre>
         </div>
-      </section>
+      </div>
 
-      <section className="settings-section">
-        <h3>Model Profile</h3>
+      <div className="card">
+        <h3 className="card-title">Model Profile</h3>
 
         <div className="profile-selector">
           {MODEL_PROFILES.map((profile) => (
@@ -130,10 +277,10 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
-      <section className="settings-section">
-        <h3>Current Models</h3>
+      <div className="card">
+        <h3 className="card-title">Current Models</h3>
 
         <div className="model-info">
           <div className="model-item">
@@ -173,7 +320,7 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
             Download {currentProfile.llm.file}
           </a>
         </div>
-      </section>
+      </div>
     </div>
   )
 }

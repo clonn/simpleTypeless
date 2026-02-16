@@ -1,9 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const steps = [
   {
     title: 'Welcome to Local Typeless',
     description: 'Privacy-first voice-to-text that runs entirely on your Mac.',
+  },
+  {
+    title: 'Check whisper.cpp',
+    description: 'Typeless uses whisper.cpp for local speech recognition with Metal GPU acceleration.',
+    action: 'check-whisper',
   },
   {
     title: 'Download AI Models',
@@ -24,7 +29,19 @@ const steps = [
 
 export function Onboarding() {
   const [currentStep, setCurrentStep] = useState(0)
+  const [asrStatus, setAsrStatus] = useState<{
+    binaryFound: boolean
+    modelFound: boolean
+  } | null>(null)
   const step = steps[currentStep]
+
+  useEffect(() => {
+    if (step.action === 'check-whisper') {
+      window.api?.getASRStatus?.().then((status: any) => {
+        if (status) setAsrStatus(status)
+      }).catch(() => {})
+    }
+  }, [step.action])
 
   const handleNext = async () => {
     if (currentStep < steps.length - 1) {
@@ -33,6 +50,12 @@ export function Onboarding() {
       // Close onboarding
       await window.api?.completeOnboarding()
     }
+  }
+
+  const refreshWhisperStatus = () => {
+    window.api?.getASRStatus?.().then((status: any) => {
+      if (status) setAsrStatus(status)
+    }).catch(() => {})
   }
 
   return (
@@ -48,6 +71,32 @@ export function Onboarding() {
       <div className="onboarding-content">
         <h1>{step.title}</h1>
         <p>{step.description}</p>
+
+        {step.action === 'check-whisper' && asrStatus && (
+          <div className="whisper-check">
+            <div className="check-item">
+              <span className={`status-dot ${asrStatus.binaryFound ? 'ready' : 'not-ready'}`} />
+              <span>{asrStatus.binaryFound ? 'whisper-cli found' : 'whisper-cli not found'}</span>
+            </div>
+            {!asrStatus.binaryFound && (
+              <div className="install-hint">
+                Install with Homebrew: <code>brew install whisper-cpp</code>
+              </div>
+            )}
+            <div className="check-item">
+              <span className={`status-dot ${asrStatus.modelFound ? 'ready' : 'not-ready'}`} />
+              <span>{asrStatus.modelFound ? 'Model ready' : 'Model will be downloaded in the next step'}</span>
+            </div>
+            {!asrStatus.binaryFound && (
+              <button className="onboarding-btn-secondary" onClick={refreshWhisperStatus}>
+                Re-check
+              </button>
+            )}
+            {asrStatus.binaryFound && asrStatus.modelFound && (
+              <div className="check-success">All set! whisper.cpp is ready.</div>
+            )}
+          </div>
+        )}
       </div>
       <button className="onboarding-btn" onClick={handleNext}>
         {currentStep === steps.length - 1 ? 'Get Started' : 'Next'}

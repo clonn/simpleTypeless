@@ -75,58 +75,83 @@ function App(): JSX.Element {
 
   return (
     <div className="app">
-      <header className="app-header">
-        <h1>Local Typeless</h1>
-        <div className="tab-bar">
+      <aside className="sidebar">
+        <div className="sidebar-header">Local Typeless</div>
+        <nav className="sidebar-nav">
           <button
-            className={`tab ${activeTab === 'status' ? 'active' : ''}`}
+            className={`sidebar-item ${activeTab === 'status' ? 'active' : ''}`}
             onClick={() => setActiveTab('status')}
           >
+            <span className="sidebar-item-icon">{'\u25C9'}</span>
             Status
           </button>
           <button
-            className={`tab ${activeTab === 'models' ? 'active' : ''}`}
+            className={`sidebar-item ${activeTab === 'models' ? 'active' : ''}`}
             onClick={() => setActiveTab('models')}
           >
+            <span className="sidebar-item-icon">{'\u2B21'}</span>
             Models
           </button>
           <button
-            className={`tab ${activeTab === 'settings' ? 'active' : ''}`}
+            className={`sidebar-item ${activeTab === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveTab('settings')}
           >
+            <span className="sidebar-item-icon">{'\u2699'}</span>
             Settings
           </button>
+        </nav>
+        <div className="sidebar-status">
+          <div className="sidebar-status-row">
+            <span
+              className={`sidebar-status-dot ${modelStatus.whisper.loaded ? 'ok' : modelStatus.whisper.downloading ? 'loading' : 'error'}`}
+            />
+            <span>
+              ASR{' '}
+              {modelStatus.whisper.loaded
+                ? 'Ready'
+                : modelStatus.whisper.downloading
+                  ? 'Loading'
+                  : 'Offline'}
+            </span>
+          </div>
+          <div className="sidebar-status-row">
+            <span
+              className={`sidebar-status-dot ${modelStatus.llm.loaded ? 'ok' : modelStatus.llm.downloading ? 'loading' : 'error'}`}
+            />
+            <span>
+              LLM{' '}
+              {modelStatus.llm.loaded
+                ? 'Ready'
+                : modelStatus.llm.downloading
+                  ? 'Loading'
+                  : 'Offline'}
+            </span>
+          </div>
         </div>
-      </header>
+      </aside>
 
       <main className="app-content">
-        {activeTab === 'status' && (
-          <div className="status-view">
-            <StatusIndicator
-              isRecording={isRecording}
-              isProcessing={isProcessing}
-              modelStatus={{ whisperLoaded: modelStatus.whisper.loaded, llmLoaded: modelStatus.llm.loaded }}
-              onToggle={handleRecordingToggle}
-            />
-
-            <TranscriptionHistory history={history} onHistoryUpdate={setHistory} />
-          </div>
-        )}
-        {activeTab === 'models' && <ModelStatusPanel />}
-        {activeTab === 'settings' && (
-          <SettingsPanel settings={settings} onChange={handleSettingsChange} />
-        )}
+        <div key={activeTab} className="view-enter">
+          {activeTab === 'status' && (
+            <div className="status-view">
+              <StatusIndicator
+                isRecording={isRecording}
+                isProcessing={isProcessing}
+                modelStatus={{
+                  whisperLoaded: modelStatus.whisper.loaded,
+                  llmLoaded: modelStatus.llm.loaded
+                }}
+                onToggle={handleRecordingToggle}
+              />
+              <TranscriptionHistory history={history} onHistoryUpdate={setHistory} />
+            </div>
+          )}
+          {activeTab === 'models' && <ModelStatusPanel />}
+          {activeTab === 'settings' && (
+            <SettingsPanel settings={settings} onChange={handleSettingsChange} />
+          )}
+        </div>
       </main>
-
-      <footer className="app-footer">
-        <span className="model-status">
-          ASR: {modelStatus.whisper.loaded ? '✓' : modelStatus.whisper.downloading ? '↓' : '○'} | LLM:{' '}
-          {modelStatus.llm.loaded ? '✓' : modelStatus.llm.downloading ? '↓' : '○'}
-        </span>
-        <span className="shortcut-hint">
-          Press {settings?.globalHotkey || 'Ctrl+Shift+Space'} to toggle recording
-        </span>
-      </footer>
     </div>
   )
 }

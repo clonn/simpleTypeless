@@ -30,6 +30,22 @@ export interface ModelConfig {
   llmModelPath: string
 }
 
+export type ASRProvider = 'local-whisper' | 'macos-dictation' | 'cloud-openai'
+
+export interface CloudAPIConfig {
+  openaiApiKey?: string
+}
+
+export interface ASRStatus {
+  provider: ASRProvider
+  ready: boolean
+  binaryFound: boolean
+  modelFound: boolean
+  binaryPath?: string
+  modelPath?: string
+  error?: string
+}
+
 export interface ModelDownloadState {
   modelType: 'whisper' | 'llm'
   modelName: string
@@ -124,6 +140,8 @@ export interface AppSettings {
   showFloatingWidget: boolean
   modelProfileId: string
   enableSounds: boolean
+  asrProvider: ASRProvider
+  cloudApiConfig: CloudAPIConfig
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -132,7 +150,9 @@ export const DEFAULT_SETTINGS: AppSettings = {
   autoInject: true,
   showFloatingWidget: true,
   modelProfileId: 'balanced',
-  enableSounds: true
+  enableSounds: true,
+  asrProvider: 'local-whisper',
+  cloudApiConfig: {}
 }
 
 // IPC Channel names
@@ -173,5 +193,11 @@ export const IPC_CHANNELS = {
   GET_HISTORY_COUNT: 'history:count',
 
   // Onboarding
-  ONBOARDING_COMPLETE: 'onboarding:complete'
+  ONBOARDING_COMPLETE: 'onboarding:complete',
+
+  // ASR Testing
+  TEST_ASR: 'asr:test',
+
+  // ASR Status
+  ASR_STATUS: 'asr:status'
 } as const

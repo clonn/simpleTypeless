@@ -16,3 +16,11 @@ Use `@/openspec/AGENTS.md` to learn:
 Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
+
+## ASR Configuration
+
+- **Default ASR provider:** local whisper.cpp via Homebrew (`brew install whisper-cpp`)
+- **Binary:** `whisper-cli` detected at runtime via `which` or fallback paths (`/opt/homebrew/bin/`, `/usr/local/bin/`)
+- **Model:** `ggml-large-v3-turbo-q5_0.bin` downloaded from HuggingFace
+- **GPU:** Metal acceleration is automatic on Apple Silicon Macs
+- **Model location:** `~/Library/Application Support/local-typeless/models/`

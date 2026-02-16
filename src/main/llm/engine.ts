@@ -92,7 +92,7 @@ export class LLMEngine {
   }
 
   private async runInference(userInput: string, systemPrompt: string): Promise<string> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       const llamaBinary = this.getLlamaBinaryPath()
 
       if (!existsSync(llamaBinary)) {
@@ -220,7 +220,11 @@ ${userInput}
     ]
 
     for (const filler of fillers) {
-      const regex = new RegExp(`\\b${filler}\\b`, 'gi')
+      // Use \b for ASCII fillers, plain match for CJK fillers
+      const isCJK = /[\u4e00-\u9fff]/.test(filler)
+      const regex = isCJK
+        ? new RegExp(filler, 'g')
+        : new RegExp(`\\b${filler}\\b`, 'gi')
       result = result.replace(regex, '')
     }
 

@@ -1,32 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { RecordingState, ModelStatus, ModelDownloadState, AppSettings, TranscriptionResult } from '@shared/types'
-
-declare global {
-  interface Window {
-    api?: {
-      // Recording controls
-      startRecording: () => Promise<void>
-      stopRecording: () => Promise<void>
-      // Settings
-      getSettings: () => Promise<AppSettings>
-      setSettings: (settings: Partial<AppSettings>) => Promise<AppSettings>
-      // Model status and download
-      getModelStatus: () => Promise<ModelStatus>
-      downloadModel: (modelType: 'whisper' | 'llm') => Promise<void>
-      // History
-      getHistory: (limit?: number, offset?: number) => Promise<unknown[]>
-      deleteHistory: (id: string) => Promise<void>
-      getHistoryCount: () => Promise<number>
-      // Onboarding
-      completeOnboarding: () => Promise<void>
-      // Event listeners
-      onRecordingStateChanged: (callback: (state: RecordingState) => void) => () => void
-      onTranscriptionPartial: (callback: (data: { rawText: string }) => void) => () => void
-      onTranscriptionComplete: (callback: (result: TranscriptionResult) => void) => () => void
-      onModelDownloadProgress: (callback: (state: ModelDownloadState) => void) => () => void
-    }
-  }
-}
+import type { RecordingState } from '@shared/types'
 
 export function useRecordingState(): RecordingState {
   const [state, setState] = useState<RecordingState>({

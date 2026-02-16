@@ -31,6 +31,19 @@ function getTimestamp(item: HistoryItem): number {
   return Date.now()
 }
 
+function formatTime(timestamp: number): string {
+  const now = Date.now()
+  const diff = now - timestamp
+  const seconds = Math.floor(diff / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+
+  if (seconds < 60) return 'Just now'
+  if (minutes < 60) return `${minutes}m ago`
+  if (hours < 24) return `${hours}h ago`
+  return new Date(timestamp).toLocaleDateString()
+}
+
 export function TranscriptionHistory({
   history,
   onHistoryUpdate
@@ -47,7 +60,11 @@ export function TranscriptionHistory({
   if (history.length === 0) {
     return (
       <div className="transcription-history empty">
-        <p>No transcriptions yet. Press the hotkey to start recording.</p>
+        <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>{'\uD83C\uDF99'}</div>
+        <p>No transcriptions yet</p>
+        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+          Press the hotkey to start recording
+        </p>
       </div>
     )
   }
@@ -56,7 +73,7 @@ export function TranscriptionHistory({
     if (!item.id || !window.api?.deleteHistory) return
     await window.api.deleteHistory(item.id)
     if (onHistoryUpdate && window.api?.getHistory) {
-      const updated = await window.api.getHistory(50)
+      const updated = (await window.api.getHistory(50)) as HistoryItem[]
       onHistoryUpdate(updated)
     }
   }
@@ -64,11 +81,7 @@ export function TranscriptionHistory({
   return (
     <div className="transcription-history">
       <h3>Recent Transcriptions</h3>
-      <div
-        ref={parentRef}
-        className="history-list"
-        style={{ height: '400px', overflow: 'auto' }}
-      >
+      <div ref={parentRef} className="history-list" style={{ height: '400px', overflow: 'auto' }}>
         <div
           style={{
             height: `${virtualizer.getTotalSize()}px`,
@@ -124,7 +137,7 @@ export function TranscriptionHistory({
                         onClick={() => handleDelete(item)}
                         title="Delete"
                       >
-                        ✕
+                        {'\u2715'}
                       </button>
                     )}
                   </div>
@@ -136,9 +149,4 @@ export function TranscriptionHistory({
       </div>
     </div>
   )
-}
-
-function formatTime(timestamp: number): string {
-  const date = new Date(timestamp)
-  return date.toLocaleTimeString()
 }

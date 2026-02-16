@@ -26,28 +26,26 @@ export function StatusIndicator({
     return 'ready'
   }
 
-  const getAnimationClass = (): string => {
-    if (isProcessing) return 'status-circle-processing'
-    if (isRecording) return 'status-circle-recording'
-    return 'status-circle-ready'
-  }
-
   const modelsReady = modelStatus.whisperLoaded && modelStatus.llmLoaded
 
   return (
     <div className="status-indicator">
-      <div className={`status-circle ${getStatusClass()} ${getAnimationClass()}`}>
-        <div className="pulse" />
+      <div className={`status-orb ${getStatusClass()}`}>
+        <div className="status-orb-glow" />
+        <span className="status-orb-icon">
+          {isProcessing ? '\u23F3' : isRecording ? '\uD83C\uDFA4' : '\uD83C\uDF99\uFE0F'}
+        </span>
       </div>
 
-      <div className="status-text">
+      <div className="status-label">
         <h2>{getStatusText()}</h2>
         {!modelsReady && (
           <p className="model-warning">Models not loaded. Download required models to start.</p>
         )}
       </div>
 
-      <button className="record-button" onClick={onToggle} disabled={!modelsReady || isProcessing}>
+      <button className="record-btn" onClick={onToggle} disabled={!modelsReady || isProcessing}>
+        <span className="record-btn-icon">{isRecording ? '\u23F9' : '\u25CF'}</span>
         {isRecording ? 'Stop' : 'Start'} Recording
       </button>
     </div>
