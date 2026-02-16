@@ -27,6 +27,7 @@ const api = {
     ipcRenderer.invoke(IPC_CHANNELS.GET_HISTORY_COUNT),
   exportHistory: (format: 'csv' | 'json'): Promise<string> =>
     ipcRenderer.invoke(IPC_CHANNELS.EXPORT_HISTORY, format),
+  getStats: () => ipcRenderer.invoke(IPC_CHANNELS.GET_STATS),
 
   // Onboarding
   completeOnboarding: (): Promise<void> =>
@@ -34,6 +35,15 @@ const api = {
 
   // ASR Status
   getASRStatus: () => ipcRenderer.invoke(IPC_CHANNELS.ASR_STATUS),
+
+  // Theme
+  getTheme: (): Promise<'dark' | 'light'> => ipcRenderer.invoke(IPC_CHANNELS.GET_THEME),
+  onThemeChange: (callback: (theme: 'dark' | 'light') => void): (() => void) => {
+    const listener = (_: Electron.IpcRendererEvent, theme: 'dark' | 'light'): void =>
+      callback(theme)
+    ipcRenderer.on(IPC_CHANNELS.THEME_CHANGED, listener)
+    return () => ipcRenderer.removeListener(IPC_CHANNELS.THEME_CHANGED, listener)
+  },
 
   // Event listeners
   onRecordingStateChanged: (callback: (state: RecordingState) => void): (() => void) => {

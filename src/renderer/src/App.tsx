@@ -73,6 +73,20 @@ function App(): JSX.Element {
     return unsubscribe
   }, [])
 
+  // Apply system theme on mount and listen for changes
+  useEffect(() => {
+    const applyTheme = (theme: 'dark' | 'light'): void => {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    // Get initial theme
+    window.api?.getTheme?.().then(applyTheme).catch(() => {})
+
+    // Listen for theme changes
+    const unsubscribe = window.api?.onThemeChange?.(applyTheme)
+    return () => unsubscribe?.()
+  }, [])
+
   const handleSettingsChange = async (newSettings: Partial<AppSettings>): Promise<void> => {
     if (!window.api?.setSettings) return
     const updated = await window.api.setSettings(newSettings)

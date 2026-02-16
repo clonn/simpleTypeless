@@ -1,4 +1,4 @@
-import { eq, desc } from 'drizzle-orm'
+import { eq, desc, sql } from 'drizzle-orm'
 import { getDb, schema } from './index'
 import { randomUUID } from 'crypto'
 import type { AppContext, TranscriptionResult } from '../../shared/types'
@@ -52,4 +52,53 @@ export function getHistoryCount(): number {
 export function deleteTranscription(id: string): void {
   const db = getDb()
   db.delete(schema.history).where(eq(schema.history.id, id)).run()
+}
+
+export function getStats(): {
+  totalTranscriptions: number
+  totalWords: number
+  totalDurationSeconds: number
+  averagePerDay: number
+} {
+  const db = getDb()
+
+  const countResult = db.select({ value: sql<number>`count(*)` }).from(schema.history).all()
+  const totalTranscriptions = countResult[0]?.value ?? 0
+
+  if (totalTranscriptions === 0) {
+    return { totalTranscriptions: 0, totalWords: 0, totalDurationSeconds: 0, averagePerDay: 0 }
+  }
+
+  const durationResult = db
+    .select({ value: sql<number>`coalesce(sum(duration), 0)` })
+    .from(schema.history)
+    .all()
+  const totalDurationSeconds = durationResult[0]?.value ?? 0
+
+  const allTexts = db
+    .select({ rawText: schema.history.rawText })
+    .from(schema.history)
+    .all()
+  const totalWords = allTexts.reduce((sum, row) => {
+    const text = row.rawText || ''
+    return sum + text.split(/\s+/).filter(Boolean).length
+  }, 0)
+
+  const dateRange = db
+    .select({
+      minDate: sql<string>`min(created_at)`,
+      maxDate: sql<string>`max(created_at)`
+    })
+    .from(schema.history)
+    .all()
+
+  let averagePerDay = totalTranscriptions
+  if (dateRange[0]?.minDate) {
+    const firstDate = new Date(dateRange[0].minDate).getTime()
+    const now = Date.now()
+    const days = Math.max(1, Math.ceil((now - firstDate) / (1000 * 60 * 60 * 24)))
+    averagePerDay = Math.round((totalTranscriptions / days) * 10) / 10
+  }
+
+  return { totalTranscriptions, totalWords, totalDurationSeconds, averagePerDay }
 }

@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 
 // History items can come from the DB (with refinedText/createdAt/id)
@@ -48,6 +48,17 @@ export function TranscriptionHistory({
   history,
   onHistoryUpdate
 }: TranscriptionHistoryProps): JSX.Element {
+  const [stats, setStats] = useState<{
+    totalTranscriptions: number
+    totalWords: number
+    totalDurationSeconds: number
+    averagePerDay: number
+  } | null>(null)
+
+  useEffect(() => {
+    window.api?.getStats?.().then(setStats).catch(() => {})
+  }, [history])
+
   const parentRef = useRef<HTMLDivElement>(null)
 
   const virtualizer = useVirtualizer({
@@ -92,6 +103,30 @@ export function TranscriptionHistory({
 
   return (
     <div className="transcription-history">
+      {stats && stats.totalTranscriptions > 0 && (
+        <div className="stats-cards">
+          <div className="stat-card">
+            <span className="stat-value">{stats.totalTranscriptions}</span>
+            <span className="stat-label">Transcriptions</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-value">{stats.totalWords.toLocaleString()}</span>
+            <span className="stat-label">Words</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-value">
+              {stats.totalDurationSeconds >= 3600
+                ? `${Math.floor(stats.totalDurationSeconds / 3600)}h ${Math.floor((stats.totalDurationSeconds % 3600) / 60)}m`
+                : `${Math.floor(stats.totalDurationSeconds / 60)}m`}
+            </span>
+            <span className="stat-label">Total Duration</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-value">{stats.averagePerDay}</span>
+            <span className="stat-label">Avg / Day</span>
+          </div>
+        </div>
+      )}
       <div className="history-header-row">
         <h3>Recent Transcriptions</h3>
         <div className="history-export-buttons">

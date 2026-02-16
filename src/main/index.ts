@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, globalShortcut, ipcMain, Tray, Menu, nativeImage } from 'electron'
+import { app, shell, BrowserWindow, globalShortcut, ipcMain, Tray, Menu, nativeImage, nativeTheme } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { IPC_CHANNELS, DEFAULT_SETTINGS, AppSettings, ModelStatus, ModelDownloadState, ASRStatus } from '../shared/types'
@@ -9,7 +9,7 @@ import { TextInjector } from './injector/injector'
 import { ModelDownloader, MODELS } from './model/downloader'
 import { OpusEncoder } from './audio/opusEncoder'
 import { runMigrations } from './db/index'
-import { saveTranscription, getHistory, deleteTranscription, getHistoryCount } from './db/repository'
+import { saveTranscription, getHistory, deleteTranscription, getHistoryCount, getStats } from './db/repository'
 import { createASRProvider, ASRProviderInterface } from './asr/providerFactory'
 import { initAutoUpdater, checkForUpdates, downloadUpdate, installUpdate } from './updater'
 import { initSentry } from './sentry'
@@ -573,6 +573,14 @@ function setupIPC(): void {
     installUpdate()
   })
 
+  ipcMain.handle(IPC_CHANNELS.GET_STATS, () => {
+    return getStats()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.GET_THEME, () => {
+    return nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
+  })
+
   ipcMain.handle(IPC_CHANNELS.ASR_STATUS, async () => {
     try {
       const { ASREngine } = await import('./asr/engine')
@@ -656,6 +664,12 @@ app.whenReady().then(async () => {
   createFloatingWidget()
   createMainWindow()
   registerGlobalShortcut()
+
+  // Broadcast theme changes to all renderer windows
+  nativeTheme.on('updated', () => {
+    const theme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
+    broadcastToRenderers(IPC_CHANNELS.THEME_CHANGED, theme)
+  })
 
   // Initialize auto-updater (in production only)
   if (!is.dev && mainWindow) {

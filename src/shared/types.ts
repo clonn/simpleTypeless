@@ -48,6 +48,13 @@ export interface ASRStatus {
   error?: string
 }
 
+export interface TranscriptionStats {
+  totalTranscriptions: number
+  totalWords: number
+  totalDurationSeconds: number
+  averagePerDay: number
+}
+
 export interface ModelDownloadState {
   modelType: 'whisper' | 'llm'
   modelName: string
@@ -249,5 +256,12 @@ export const IPC_CHANNELS = {
   HOTKEY_STATUS: 'hotkey:status',
 
   // Export
-  EXPORT_HISTORY: 'history:export'
+  EXPORT_HISTORY: 'history:export',
+
+  // Theme
+  GET_THEME: 'theme:get',
+  THEME_CHANGED: 'theme:changed',
+
+  // Stats
+  GET_STATS: 'stats:get'
 } as const
