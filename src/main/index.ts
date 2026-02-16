@@ -31,8 +31,8 @@ let opusEncoder: OpusEncoder | null = null
 
 function createFloatingWidget(): void {
   floatingWidget = new BrowserWindow({
-    width: 200,
-    height: 60,
+    width: 280,
+    height: 56,
     x: 100,
     y: 100,
     frame: false,
@@ -91,7 +91,7 @@ function createOnboardingWindow(): void {
 
 function createMainWindow(): void {
   mainWindow = new BrowserWindow({
-    width: 800,
+    width: 860,
     height: 600,
     show: false,
     autoHideMenuBar: true,

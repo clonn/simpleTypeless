@@ -20,9 +20,12 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
 
   useEffect(() => {
     if (settings?.asrProvider === 'local-whisper') {
-      window.api?.getASRStatus?.().then((status: any) => {
-        if (status) setAsrStatus(status)
-      }).catch(() => {})
+      window.api
+        ?.getASRStatus?.()
+        .then((status: any) => {
+          if (status) setAsrStatus(status)
+        })
+        .catch(() => {})
     }
   }, [settings?.asrProvider])
 
@@ -85,8 +88,8 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
 
   return (
     <div className="settings-panel">
-      <section className="settings-section">
-        <h3>General</h3>
+      <div className="card">
+        <h3 className="card-title">General</h3>
 
         <div className="setting-item">
           <label>Global Hotkey</label>
@@ -132,10 +135,10 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
             onChange={(e) => onChange({ enableSounds: e.target.checked })}
           />
         </div>
-      </section>
+      </div>
 
-      <section className="settings-section">
-        <h3>Speech Recognition Provider</h3>
+      <div className="card">
+        <h3 className="card-title">Speech Recognition Provider</h3>
 
         <div className="provider-selection">
           <label className="provider-option">
@@ -151,7 +154,9 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
               <span className="provider-desc">Uses local whisper.cpp model</span>
               {settings.asrProvider === 'local-whisper' && asrStatus && (
                 <div className="provider-status">
-                  <span className={`status-dot ${asrStatus.binaryFound ? 'ready' : 'not-ready'}`} />
+                  <span
+                    className={`status-dot ${asrStatus.binaryFound ? 'ready' : 'not-ready'}`}
+                  />
                   <span className="status-text">
                     {asrStatus.binaryFound ? 'whisper-cli found' : 'whisper-cli not found'}
                   </span>
@@ -160,7 +165,9 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
                       Install: <code>brew install whisper-cpp</code>
                     </div>
                   )}
-                  <span className={`status-dot ${asrStatus.modelFound ? 'ready' : 'not-ready'}`} />
+                  <span
+                    className={`status-dot ${asrStatus.modelFound ? 'ready' : 'not-ready'}`}
+                  />
                   <span className="status-text">
                     {asrStatus.modelFound ? 'Model ready' : 'Model not downloaded'}
                   </span>
@@ -218,26 +225,18 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
         )}
 
         <div className="test-section">
-          <button
-            className="test-button"
-            onClick={handleTestASR}
-            disabled={testingASR}
-          >
+          <button className="test-button" onClick={handleTestASR} disabled={testingASR}>
             {testingASR ? 'Testing...' : 'Test Recognition'}
           </button>
           <span className="test-hint">
             Click and speak for 2 seconds to test the selected provider
           </span>
-          {testResult && (
-            <div className="test-result">
-              {testResult}
-            </div>
-          )}
+          {testResult && <div className="test-result">{testResult}</div>}
         </div>
-      </section>
+      </div>
 
-      <section className="settings-section">
-        <h3>Writing Mode</h3>
+      <div className="card">
+        <h3 className="card-title">Writing Mode</h3>
 
         <div className="prompt-modes">
           {DEFAULT_PROMPT_MODES.map((mode) => (
@@ -258,10 +257,10 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
               'Default'}
           </pre>
         </div>
-      </section>
+      </div>
 
-      <section className="settings-section">
-        <h3>Model Profile</h3>
+      <div className="card">
+        <h3 className="card-title">Model Profile</h3>
 
         <div className="profile-selector">
           {MODEL_PROFILES.map((profile) => (
@@ -278,10 +277,10 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
-      <section className="settings-section">
-        <h3>Current Models</h3>
+      <div className="card">
+        <h3 className="card-title">Current Models</h3>
 
         <div className="model-info">
           <div className="model-item">
@@ -321,7 +320,7 @@ export function SettingsPanel({ settings, onChange }: SettingsPanelProps): JSX.E
             Download {currentProfile.llm.file}
           </a>
         </div>
-      </section>
+      </div>
     </div>
   )
 }
