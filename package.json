@@ -2,8 +2,8 @@
   "name": "Typeless",
   "version": "1.0.0",
   "main": "out/main/index.js",
-  "description": "Electron Vite React boilerplate.",
-  "author": "",
+  "description": "Voice-to-text transcription app with AI rewriting",
+  "author": "Cympotek",
   "license": "MIT",
   "private": true,
   "debug": {
@@ -20,7 +20,10 @@
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "build:mac:dir": "electron-vite build && electron-builder --mac --dir",
+    "build:mac": "electron-vite build && electron-builder --mac --universal",
+    "release": "electron-vite build && electron-builder --mac --universal --publish always"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.16",
